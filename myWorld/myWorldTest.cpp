@@ -8,6 +8,7 @@ using namespace std;
 int main()
 {
 	/*
+	Can you hear me --------
 	double data[3] = { 2.0, 4.3, -1.9 }, data2[3] = {1.1, -3.4, 0.4};
 	dVector3d vec(data), vec2(data2);
 	double k = 3;
