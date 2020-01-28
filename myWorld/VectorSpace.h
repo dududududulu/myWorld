@@ -100,8 +100,8 @@ protected:
 
 public:
 	Vector();									// default constructor.
-	Vector(T&);						// constructor.
-	Vector(T*);						// constructor.
+	Vector(T&);									// constructor.
+	Vector(T*);									// constructor.
 	Vector(const Vector<T, dim>&);				// copy constructor.
 	Vector(const Vector<T, dim>*);				// copy constructor.
 	~Vector() {									// destructor.

@@ -167,69 +167,69 @@ protected:
 	template<typename T, int dim> friend class Vector;
 	template<typename T, int dim> friend class tVector;
 
-	T& meanElements(int = 0);								// give the mean of elements to some power.
-	void mergeZero();										// used only in GaussianElimination. no change to rank.
-	void equalize();										// equalize the elements.
-	void calRank();											// calculate the rank of the matrix. no change to matrix.
-	void setElement(T&, int, int);							// never used.								~rank
-	void setRow(_tVector<T, nCols>, int = 0);				//											~rank
-	void setColumn(_Vector<T, mRows>, int = 0);				//											~rank
-	void normRow(int);										// Normalize the row to the first element.
-	void normCol(int);										// Normalize the column to the first element.
+	T& meanElements(int = 0);                               // give the mean of elements to some power.
+	void mergeZero();                                       // used only in GaussianElimination. no change to rank.
+	void equalize();                                        // equalize the elements.
+	void calRank();                                         // calculate the rank of the matrix. no change to matrix.
+	void setElement(T&, int, int);                          // never used.								~rank
+	void setRow(_tVector<T, nCols>, int = 0);               //											~rank
+	void setColumn(_Vector<T, mRows>, int = 0);             //											~rank
+	void normRow(int);                                      // Normalize the row to the first element.
+	void normCol(int);                                      // Normalize the column to the first element.
 
-	void magnifyRow(int, T);								// Elementary Transformation: Magnify specific row.
-	void magnifyCol(int, T);								// Elementary Transformation: Magnify specific column.
-	void switchRows(int, int);								// Elementary Transformation: Switch specific rows.
-	void switchCols(int, int);								// Elementary Transformation: Switch specific columns.
-	void superposRow(int, int, T);							// Elementary Transformation: Superpose one row to another.
-	void superposCol(int, int, T);							// Elementary Transformation: Superpose one column to another.
+	void magnifyRow(int, T);                                // Elementary Transformation: Magnify specific row.
+	void magnifyCol(int, T);                                // Elementary Transformation: Magnify specific column.
+	void switchRows(int, int);                              // Elementary Transformation: Switch specific rows.
+	void switchCols(int, int);                              // Elementary Transformation: Switch specific columns.
+	void superposRow(int, int, T);                          // Elementary Transformation: Superpose one row to another.
+	void superposCol(int, int, T);                          // Elementary Transformation: Superpose one column to another.
 
-	uMatrix<T, mRows, mRows> rowElimination(int);			// Gaussian Elimination in rows. update the rank. return the left operation matrix.
-	uMatrix<T, nCols, nCols> colElimination(int);			// Gaussian Elimination in columns. update the rank. return the right operation matrix,
+	uMatrix<T, mRows, mRows> rowElimination(int);           // Gaussian Elimination in rows. update the rank. return the left operation matrix.
+	uMatrix<T, nCols, nCols> colElimination(int);           // Gaussian Elimination in columns. update the rank. return the right operation matrix,
 	template<int pCols>
-	uMatrix<T, mRows, nCols + pCols> stitch(const uMatrix<T, mRows, pCols>&)const;			// stitch mat from the right.
+	uMatrix<T, mRows, nCols + pCols> stitch(const uMatrix<T, mRows, pCols>&)const;          // stitch mat from the right.
 	template<int kRows>
-	uMatrix<T, mRows + kRows, nCols> graft(const uMatrix<T, kRows, nCols>&)const;			// graft mat from buttom.
+	uMatrix<T, mRows + kRows, nCols> graft(const uMatrix<T, kRows, nCols>&)const;           // graft mat from buttom.
 
-	uMatrix<T, mRows, nCols> add(const uMatrix<T, mRows, nCols>&)const;						// + mat.
-	uMatrix<T, mRows, nCols> add(const T&)const;											// + k.
-	uMatrix<T, mRows, nCols> minus(const uMatrix<T, mRows, nCols>&)const;					// - mat.
-	uMatrix<T, mRows, nCols> minusf(const T&)const;											// k - my.
-	uMatrix<T, mRows, nCols> _multiple(const T&)const;										// .* k.
-	_Vector<T, mRows> multiple(const _Vector<T, nCols>&)const;								// * vec.
-	uMatrix<T, mRows, nCols> _multiple(const uMatrix<T, mRows, nCols>&)const;				// .* mat.
+	uMatrix<T, mRows, nCols> add(const uMatrix<T, mRows, nCols>&)const;                     // + mat.
+	uMatrix<T, mRows, nCols> add(const T&)const;                                            // + k.
+	uMatrix<T, mRows, nCols> minus(const uMatrix<T, mRows, nCols>&)const;                   // - mat.
+	uMatrix<T, mRows, nCols> minusf(const T&)const;                                         // k - my.
+	uMatrix<T, mRows, nCols> _multiple(const T&)const;                                      // .* k.
+	_Vector<T, mRows> multiple(const _Vector<T, nCols>&)const;                              // * vec.
+	uMatrix<T, mRows, nCols> _multiple(const uMatrix<T, mRows, nCols>&)const;               // .* mat.
 
 	template<int pCols>
-	uMatrix<T, mRows, pCols> multiple(const uMatrix<T, nCols, pCols>&)const;				// * mat.
+	uMatrix<T, mRows, pCols> multiple(const uMatrix<T, nCols, pCols>&)const;                // * mat.
 
 public:
-	uMatrix(int = 0, T = 0);																// default constructor.
-	//uMatrix(_Index&);																		// construxctor.
-	uMatrix(const uMatrix<T, mRows, nCols>&);												// copy construxctor.
-	uMatrix(const uMatrix<T, mRows, nCols>*);												// copy construxctor.
-	~uMatrix() {};																			// destructor.
-	T& getElement(int = 0, int = 0);														// get the element of the matrix.
-	int getRank();																			// get the rank of the matrix. no change to rank.
-	_tVector<T, nCols> getRow(int = 0);														// get ith row.
-	_Vector<T, mRows> getColumn(int = 0);													// get jth column.
-	uMatrix<T, nCols, mRows> transpose();													// get the transpose of the matrix.
-	uMatrix<T, mRows + nCols, mRows + nCols> diagnolization();								// diagonalize the . update the rank.
-	void operator=(const uMatrix<T, mRows, nCols>&);										// =  overload. rank already set.
-	friend ostream& operator<<<T, mRows, nCols>(ostream& s, uMatrix<T, mRows, nCols>&);		// << overload.
+	uMatrix(int = 0, T = 0);                                                                // default constructor.
+	//uMatrix(_Index&);                                                                     // construxctor.
+	uMatrix(const uMatrix<T, mRows, nCols>&);                                               // copy construxctor.
+	uMatrix(const uMatrix<T, mRows, nCols>*);                                               // copy construxctor.
+	~uMatrix() {};                                                                          // destructor.
+	T& getElement(int = 0, int = 0);                                                        // get the element of the matrix.
+	int getRank();                                                                          // get the rank of the matrix. no change to rank.
+	_tVector<T, nCols> getRow(int = 0);                                                     // get ith row.
+	_Vector<T, mRows> getColumn(int = 0);                                                   // get jth column.
+	uMatrix<T, nCols, mRows> transpose();                                                   // get the transpose of the matrix.
+	uMatrix<T, mRows + nCols, mRows + nCols> diagnolization();                              // diagonalize the . update the rank.
+	void operator=(const uMatrix<T, mRows, nCols>&);                                        // =  overload. rank already set.
+	friend ostream& operator<<<T, mRows, nCols>(ostream& s, uMatrix<T, mRows, nCols>&);     // << overload.
 
-	template<typename U> operator uMatrix<U, mRows, nCols>();								// convert to uMatrix<U>.
-	template<typename U> operator eVector<U, mRows>();										// convert to uMatrix<U>.
-	template<typename U> operator etVector<U, nCols>();										// convert to uMatrix<U>.
-	operator eMatrix<T, mRows, nCols>();													// convert to eMatrix.
-	operator sMatrix<T, mRows>();															// convert to sMatrix.
-	operator diagMatrix<T, mRows>();														// convert to diagMatrix.
+	template<typename U> operator uMatrix<U, mRows, nCols>();                               // convert to uMatrix<U>.
+	template<typename U> operator eVector<U, mRows>();                                      // convert to uMatrix<U>.
+	template<typename U> operator etVector<U, nCols>();                                     // convert to uMatrix<U>.
+	operator eMatrix<T, mRows, nCols>();                                                    // convert to eMatrix.
+	operator sMatrix<T, mRows>();                                                           // convert to sMatrix.
+	operator diagMatrix<T, mRows>();                                                        // convert to diagMatrix.
 
-	template<int kRows> uMatrix<T, kRows, nCols> operator[](_Vector<int, kRows>&);			// select specific rows out of the matrix.
-	template<int pCols> uMatrix<T, mRows, pCols> operator[](_tVector<int, pCols>&);			// select specific columns out of the matrix.
+	template<int kRows> uMatrix<T, kRows, nCols> operator[](_Vector<int, kRows>&);          // select specific rows out of the matrix.
+	template<int pCols> uMatrix<T, mRows, pCols> operator[](_tVector<int, pCols>&);         // select specific columns out of the matrix.
 	template<int kRows, int pCols>
-	uMatrix<T, kRows, pCols> operator()(_Vector<int, kRows>&, _tVector<int, pCols>&);		// select specific components out of the matrix.
+	uMatrix<T, kRows, pCols> operator()(_Vector<int, kRows>&, _tVector<int, pCols>&);       // select specific components out of the matrix.
 	template<int kRows, int pCols>
-	uMatrix<T, kRows, pCols> reshape(const _Matrix<kRows, pCols>&);							// rshape the matrix.
+	uMatrix<T, kRows, pCols> reshape(const _Matrix<kRows, pCols>&);                         // rshape the matrix.
 
 	template<int pCols>
 	friend uMatrix<T, mRows, nCols + pCols> operator|(const uMatrix<T, mRows, nCols>& my, const uMatrix<T, mRows, pCols>& mat) { return my.stitch(mat); };
