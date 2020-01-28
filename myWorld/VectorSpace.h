@@ -15,16 +15,15 @@ using namespace std;
 
 	File Name:				VectorSpace.h
 	Date of Creation:		20200102
-	Latest Revise:			20200103
+	Latest Revise:			20200128
 
 	Description:
-		This file claims and defines template class Vector and eVector for any type of statistic data and any dimension.
+		This file claims and defines template class Vector and tVector for any type of statistic data and any dimension.
 
 	Abbreviations:
-		dVector<dim>	=	cVector<double, dim>
-		dVector3d		=	cVector<double, 3>
-		cVector2d		=	cVector<T, 2>
-		cVector3d		=	cVector<T, 3>
+		dVector<dim>	=	Vector<double, dim>
+		dVector2d		=	Vector<double, 2>
+		dVector3d		=	Vector<double, 3>
 
 	///////////////////////////////////////////////////////////////
 
@@ -97,7 +96,7 @@ protected:
 	template<int colDim>
 	uMatrix<T, dim, colDim> _multiple(const uMatrix<T, dim, colDim>&)const;			// .* mat.
 	template<int rowDim>
-	Vector<T, rowDim> multipleb(const uMatrix<T, rowDim, dim>&)const;				// * mat.
+	Vector<T, rowDim> multipleb(const uMatrix<T, rowDim, dim>&)const;				// mat * vec.
 
 public:
 	Vector();									// default constructor.
@@ -529,7 +528,7 @@ public:
 	friend tVector<T, dim> operator^(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.cross(tvec); }						// cross tvec.
 
 	template<int rowDim>
-	friend uMatrix<T, rowDim, dim> operator*(const tVector<T, dim>& my, const uMatrix<T, rowDim, dim>& mat) { return my._multiple(mat); }	// .* mat.
+	friend uMatrix<T, rowDim, dim> operator*(const uMatrix<T, rowDim, dim>& mat, const tVector<T, dim>& my) { return my._multiple(mat); }	// .* mat.
 	template<int colDim>
 	friend tVector<T, colDim> operator*(const tVector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my.multiple(mat); }			// * mat.
 
@@ -784,7 +783,7 @@ T& tVector<T, dim>::toVal()
 template<typename T, int dim>
 T& tVector<T, dim>::getVal(int index)
 {
-	return this->vectorSet[index][0];
+	return this->vectorSet[0][index];
 }
 
 template<typename T, int dim>
@@ -792,7 +791,7 @@ void tVector<T, dim>::normalize()
 {
 	int i;
 	for (i = 0; i < dim; ++i)
-		this->vectorSet[i][0] = this->direction[i];
+		this->vectorSet[0][i] = this->direction[i];
 	this->length = 1;
 }
 
