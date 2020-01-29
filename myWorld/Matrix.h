@@ -14,9 +14,9 @@ using namespace std;
 
 	///////////////////////////////////////////////////////////////
 
-	File Name:				Matrix.h
-	Date of Creation:		20200103
-	Latest Revise:			20200109
+	File Name:              Matrix.h
+	Date of Creation:       20200103
+	Latest Revise:          20200109
 
 	Description:
 		This file claims and defines template class Matrix and Vector for any type of statistic data and any dimension.

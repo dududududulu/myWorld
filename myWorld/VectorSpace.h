@@ -13,9 +13,9 @@ using namespace std;
 
 	///////////////////////////////////////////////////////////////
 
-	File Name:				VectorSpace.h
-	Date of Creation:		20200102
-	Latest Revise:			20200128
+	File Name:              VectorSpace.h
+	Date of Creation:       20200102
+	Latest Revise:          20200129
 
 	Description:
 		This file claims and defines template class Vector and tVector for any type of statistic data and any dimension.
@@ -78,45 +78,45 @@ protected:
 	void update();
 
 	template<int colDim>
-	uMatrix<T, dim, colDim + 1> stitch(const uMatrix<T, dim, colDim>&, bool = 0)const;			// .* mat.
-	uMatrix<T, dim, 2> stitch(const Vector<T, dim>&)const;							// stitch mat from the right.
+	uMatrix<T, dim, colDim + 1> stitch(const uMatrix<T, dim, colDim>&, bool = 0)const;    // stitch with mat from the right.
+	uMatrix<T, dim, 2> stitch(const Vector<T, dim>&)const;                                // stitch with vec from the right.
 	template<int newDim>
-	Vector<T, dim + newDim> graft(const Vector<T, newDim>&)const;					// graft mat from buttom.
+	Vector<T, dim + newDim> graft(const Vector<T, newDim>&)const;                         // graft mat from buttom.
 
-	Vector<T, dim> add(const Vector<T, dim>&)const;									// + vec.
-	Vector<T, dim> add(const T&)const;												// + k.
-	Vector<T, dim> minus(const Vector<T, dim>&)const;								// - vec.
-	Vector<T, dim> minusf(const T&)const;											// k - my.
-	Vector<T, dim> _multiple(const T&)const;										// .* k.
-	Vector<T, dim> _multiple(const Vector<T, dim>&)const;							// .* vec.
-	Vector<T, dim> cross(const Vector<T, dim>& vec)const;							// cross vec.
+	Vector<T, dim> add(const Vector<T, dim>&)const;                                 // + vec.
+	Vector<T, dim> add(const T&)const;                                              // + k.
+	Vector<T, dim> minus(const Vector<T, dim>&)const;                               // - vec.
+	Vector<T, dim> minusf(const T&)const;                                           // k - my.
+	Vector<T, dim> _multiple(const T&)const;                                        // .* k.
+	Vector<T, dim> _multiple(const Vector<T, dim>&)const;                           // .* vec.
+	Vector<T, dim> cross(const Vector<T, dim>& vec)const;                           // cross vec.
 
 	template<int colDim>
-	uMatrix<T, dim, colDim> multiple(const tVector<T, colDim>&)const;				// * tvec.
+	uMatrix<T, dim, colDim> multiple(const tVector<T, colDim>&)const;               // * tvec.
 	template<int colDim>
-	uMatrix<T, dim, colDim> _multiple(const uMatrix<T, dim, colDim>&)const;			// .* mat.
+	uMatrix<T, dim, colDim> _multiple(const uMatrix<T, dim, colDim>&)const;         // .* mat.
 	template<int rowDim>
-	Vector<T, rowDim> multipleb(const uMatrix<T, rowDim, dim>&)const;				// mat * vec.
+	Vector<T, rowDim> multipleb(const uMatrix<T, rowDim, dim>&)const;               // mat * vec.
 
 public:
-	Vector();									// default constructor.
-	Vector(T&);									// constructor.
-	Vector(T*);									// constructor.
-	Vector(const Vector<T, dim>&);				// copy constructor.
-	Vector(const Vector<T, dim>*);				// copy constructor.
-	~Vector() {									// destructor.
+	Vector();                                        // default constructor.
+	Vector(T&);                                      // constructor.
+	Vector(T*);                                      // constructor.
+	Vector(const Vector<T, dim>&);                   // copy constructor.
+	Vector(const Vector<T, dim>*);                   // copy constructor.
+	~Vector() {                                      // destructor.
 		// unfinished. inform needed.
 		//cout << "- Destructor Vector." << endl;
 	};
-	T& toVal();									// convert to T if dimension == 1.
-	int getDim() { return dim; };				// get dimension.
-	T& getVal(int);								// get the ith value of the vector.
-	T& getLen() { return this->calLen(); };			// get length of the vector.
-	T* getDir() { return this->calDir(); };			// get the direction of the vector.
-	void normalize();							// normalize the vector.
-	tVector<T, dim> transpose();							// transpose.
-	void operator=(const Vector<T, dim>);		// = overload.
-	friend ostream& operator<<<T, dim>(ostream& s, Vector<T, dim>&);		// << overload.
+	T& toVal();                                      // convert to T if dimension == 1.
+	int getDim() { return dim; };                    // get dimension.
+	T& getVal(int);                                  // get the ith value of the vector.
+	T& getLen() { return this->calLen(); };          // get length of the vector.
+	T* getDir() { return this->calDir(); };          // get the direction of the vector.
+	void normalize();                                // normalize the vector.
+	tVector<T, dim> transpose();                     // transpose.
+	void operator=(const Vector<T, dim>);            // = overload.
+	friend ostream& operator<<<T, dim>(ostream& s, Vector<T, dim>&);    // << overload.
 
 	template<int colDim>
 	friend uMatrix<T, dim, colDim + 1> operator|(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my.stitch(mat, 0); };
@@ -133,16 +133,16 @@ public:
 	friend Vector<T, dim> operator-(const Vector<T, dim>& my, const T& k) { return my.add(-k); };
 	friend Vector<T, dim> operator-(const T& k, const Vector<T, dim>& my) { return my.minusf(k); };
 
-	friend Vector<T, dim> operator*(const Vector<T, dim>& my, const T& k) { return my._multiple(k); }										// .* k.
-	friend Vector<T, dim> operator*(const Vector<T, dim>& my, const Vector<T, dim>& vec) { return my._multiple(vec); }						// .* k.
-	friend Vector<T, dim> operator^(const Vector<T, dim>& my, const Vector<T, dim>& vec) {return my.cross(vec); }							// cross vec.
+	friend Vector<T, dim> operator*(const Vector<T, dim>& my, const T& k) { return my._multiple(k); }
+	friend Vector<T, dim> operator*(const Vector<T, dim>& my, const Vector<T, dim>& vec) { return my._multiple(vec); }
+	friend Vector<T, dim> operator^(const Vector<T, dim>& my, const Vector<T, dim>& vec) {return my.cross(vec); }
 
 	template<int colDim>
-	friend uMatrix<T, dim, colDim> operator*(const Vector<T, dim>& my, const tVector<T, colDim>& tvec) { return my.multiple(tvec); }		// * tvec.
+	friend uMatrix<T, dim, colDim> operator*(const Vector<T, dim>& my, const tVector<T, colDim>& tvec) { return my.multiple(tvec); }
 	template<int colDim>
-	friend uMatrix<T, dim, colDim> operator*(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my._multiple(mat); }	// .* mat.
+	friend uMatrix<T, dim, colDim> operator*(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my._multiple(mat); }
 	template<int rowDim>
-	friend Vector<T, rowDim> operator*(const uMatrix<T, rowDim, dim>& mat, const Vector<T, dim>& my) { return my.multipleb(mat); }			// * mat.
+	friend Vector<T, rowDim> operator*(const uMatrix<T, rowDim, dim>& mat, const Vector<T, dim>& my) { return my.multipleb(mat); }
 
 };
 
@@ -467,44 +467,44 @@ protected:
 	void update();
 
 	template<int rowDim>
-	uMatrix<T, rowDim + 1, dim> graft(const uMatrix<T, rowDim, dim>&, bool = 0)const;		// graft mat from buttom.
-	uMatrix<T, 2, dim> graft(const tVector<T, dim>&)const;							// graft tvec from buttom.
+	uMatrix<T, rowDim + 1, dim> graft(const uMatrix<T, rowDim, dim>&, bool = 0)const;       // graft mat from buttom.
+	uMatrix<T, 2, dim> graft(const tVector<T, dim>&)const;                                  // graft tvec from buttom.
 	template<int newDim>
-	tVector<T, dim + newDim> stitch(const tVector<T, newDim>&)const;				// stitch mat from right.
+	tVector<T, dim + newDim> stitch(const tVector<T, newDim>&)const;                        // stitch mat from right.
 
-	tVector<T, dim> add(const tVector<T, dim>&)const;								// + tvec.
-	tVector<T, dim> add(const T&)const;												// + k.
-	tVector<T, dim> minus(const tVector<T, dim>&)const;								// - tvec.
-	tVector<T, dim> minusf(const T&)const;											// k - my.
-	tVector<T, dim> _multiple(const T&)const;										// .* k.
-	tVector<T, dim> _multiple(const tVector<T, dim>&)const;							// .* tvec.
-	tVector<T, dim> cross(const tVector<T, dim>&)const;								// cross tvec.
-	T multiple(const Vector<T, dim>&)const;											// * vec.
+	tVector<T, dim> add(const tVector<T, dim>&)const;                               // + tvec.
+	tVector<T, dim> add(const T&)const;                                             // + k.
+	tVector<T, dim> minus(const tVector<T, dim>&)const;                             // - tvec.
+	tVector<T, dim> minusf(const T&)const;                                          // k - my.
+	tVector<T, dim> _multiple(const T&)const;                                       // .* k.
+	tVector<T, dim> _multiple(const tVector<T, dim>&)const;                         // .* tvec.
+	tVector<T, dim> cross(const tVector<T, dim>&)const;                             // cross tvec.
+	T multiple(const Vector<T, dim>&)const;                                         // * vec.
 
 	template<int rowDim>
-	uMatrix<T, rowDim, dim> _multiple(const uMatrix<T, rowDim, dim>&)const;			// .* mat.
+	uMatrix<T, rowDim, dim> _multiple(const uMatrix<T, rowDim, dim>&)const;         // .* mat.
 	template<int colDim>
-	tVector<T, colDim> multiple(const uMatrix<T, dim, colDim>&)const;				// * mat.
+	tVector<T, colDim> multiple(const uMatrix<T, dim, colDim>&)const;               // * mat.
 
 public:
-	tVector();									// default constructor.
-	tVector(T&);								// constructor.
-	tVector(T*);								// constructor.
-	tVector(const tVector<T, dim>&);				// copy constructor.
-	tVector(const tVector<T, dim>*);				// copy constructor.
-	~tVector() {									// destructor.
+	tVector();                                        // default constructor.
+	tVector(T&);                                      // constructor.
+	tVector(T*);                                      // constructor.
+	tVector(const tVector<T, dim>&);                  // copy constructor.
+	tVector(const tVector<T, dim>*);                  // copy constructor.
+	~tVector() {                                      // destructor.
 		// unfinished. inform needed.
 		//cout << "- Destructor Vector." << endl;
 	};
-	T& toVal();									// convert to T if dimension == 1.
-	int getDim() { return dim; };				// get dimension.
-	T& getVal(int);								// get the ith value of the vector.
-	T& getLen() { return this->calLen(); };			// get length of the vector.
-	T* getDir() { return this->calDir(); };			// get the direction of the vector.
-	void normalize();							// normalize the vector.
-	Vector<T, dim> transpose();							// transpose.
-	void operator=(const tVector<T, dim>);		// = overload.
-	friend ofstream& operator<<<T, dim>(ofstream&, tVector<T, dim>&);
+	T& toVal();                                       // convert to T if dimension == 1.
+	int getDim() { return dim; };                     // get dimension.
+	T& getVal(int);                                   // get the ith value of the vector.
+	T& getLen() { return this->calLen(); };           // get length of the vector.
+	T* getDir() { return this->calDir(); };           // get the direction of the vector.
+	void normalize();                                 // normalize the vector.
+	Vector<T, dim> transpose();                       // transpose.
+	void operator=(const tVector<T, dim>);            // = overload.
+	friend ofstream& operator<<<T, dim>(ofstream&, tVector<T, dim>&);     // << overload.
 
 	template<int rowDim>
 	friend uMatrix<T, rowDim + 1, dim> operator/(const tVector<T, dim>& my, const uMatrix<T, rowDim, dim>& mat) { return my.graft(mat, 0); };
@@ -521,16 +521,16 @@ public:
 	friend tVector<T, dim> operator-(const tVector<T, dim>& my, const T& k) { return my.add(-k); };
 	friend tVector<T, dim> operator-(const T& k, const tVector<T, dim>& my) { return my.minusf(k); };
 
-	friend tVector<T, dim> operator*(const tVector<T, dim>& my, const T& k) { return my._multiple(k); }										// .* k.
-	friend tVector<T, dim> operator*(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my._multiple(tvec); }					// .* k.
+	friend tVector<T, dim> operator*(const tVector<T, dim>& my, const T& k) { return my._multiple(k); }
+	friend tVector<T, dim> operator*(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my._multiple(tvec); }
 
-	friend T operator*(const tVector<T, dim>& my, const Vector<T, dim>& vec) { return my.multiple(vec); }									// my * vec.
-	friend tVector<T, dim> operator^(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.cross(tvec); }						// cross tvec.
+	friend T operator*(const tVector<T, dim>& my, const Vector<T, dim>& vec) { return my.multiple(vec); }
+	friend tVector<T, dim> operator^(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.cross(tvec); }
 
 	template<int rowDim>
-	friend uMatrix<T, rowDim, dim> operator*(const uMatrix<T, rowDim, dim>& mat, const tVector<T, dim>& my) { return my._multiple(mat); }	// .* mat.
+	friend uMatrix<T, rowDim, dim> operator*(const uMatrix<T, rowDim, dim>& mat, const tVector<T, dim>& my) { return my._multiple(mat); }
 	template<int colDim>
-	friend tVector<T, colDim> operator*(const tVector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my.multiple(mat); }			// * mat.
+	friend tVector<T, colDim> operator*(const tVector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my.multiple(mat); }
 
 };
 

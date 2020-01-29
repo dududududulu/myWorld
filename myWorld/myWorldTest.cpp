@@ -3,6 +3,7 @@
 #include "Segment.h"
 #include "VectorSpace.h"
 #include "Matrix.h"
+#include "Concept.h"
 using namespace std;
 
 int main()
@@ -63,6 +64,14 @@ int main()
 	
 	//_uIndex<double> index = prior | 0.0 | 9.3;
 	//cout << index;
+
+	CShape shape;
+	CLine geo;
+	CGeometry* test = &shape;
+	test->print();
+	test = &geo;
+	test->print();
+
 
 	return 0;
 }

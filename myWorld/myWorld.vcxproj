@@ -123,9 +123,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CGeometry.cpp" />
     <ClCompile Include="myWorldTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Concept.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="Matrix.h" />
