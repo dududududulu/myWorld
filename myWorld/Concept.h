@@ -25,7 +25,7 @@ using namespace std;
 		Concept
 		1	CGeometry
 		1	2	CLine
-		1	2	CShape: CSquare / CRectangle / CCircle / CTriangle / CPolygon / CFreeShape
+		1	2	CShape: CSquare / CRectangle / CCircle / CPolygon / CFreeShape
 		1	2	CSolid: CCube / CCuboid / CGlobe / CCylinder / CPrism / CFreeSolid
 				
 

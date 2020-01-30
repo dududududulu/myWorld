@@ -31,20 +31,20 @@ using namespace std;
 */
 
 template<int dim>
-class Base
+class LnBase
 {
 	dMatrix<dim, dim> baseMatrix;
 protected:
 	void SchmitOrth();
 public:
-	Base(int = 0);
-	~Base() {};
+	LnBase(int = 0);
+	~LnBase() {};
 	dVector<dim> project(dVector<dim>&);
 	void printBase();
 };
 
 template<int dim>
-Base<dim>::Base(int type)
+LnBase<dim>::LnBase(int type)
 {
 	if (type == 0) baseMatrix = identity(dim);
 	if (type == 1)
@@ -55,7 +55,7 @@ Base<dim>::Base(int type)
 }
 
 template<int dim>
-void Base<dim>::SchmitOrth()
+void LnBase<dim>::SchmitOrth()
 {
 	int i, j;
 	double projection;
@@ -75,13 +75,13 @@ void Base<dim>::SchmitOrth()
 }
 
 template<int dim>
-dVector<dim> Base<dim>::project(dVector<dim>& vec)
+dVector<dim> LnBase<dim>::project(dVector<dim>& vec)
 {
 	return baseMatrix.transpose() * vec;
 }
 
 template<int dim>
-void Base<dim>::printBase()
+void LnBase<dim>::printBase()
 {
 	cout << baseMatrix << endl;
 }
@@ -96,12 +96,10 @@ template<int dim>
 class Ref
 {
 	Point<dim> origin;
-	Base<dim> base;
+	LnBase<dim> base;
 public:
 	Ref();
-	~Ref() {
-		delete ref;
-	};
+	~Ref() {};
 	bool isBalanced();
 	bool isAbsolute();
 	Point<dim> mapping(Point<dim>&);
