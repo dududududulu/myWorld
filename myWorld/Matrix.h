@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <fstream>
 #include <stdlib.h>
+#include "settings.h"
 using namespace std;
 
 /*
@@ -35,33 +36,7 @@ using namespace std;
 */
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#define transversal				0
-#define vertical				1
-#define bothsides				2
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////		//	_Matrix class.
-
-template<typename U, U num1, U num2>
-class _bGroup					// _bGroup class.
-{
-public:
-	_bGroup() {};
-	~_bGroup() {};
-};
-
-template<int mRows, int nCols>
-class _Matrix : public _bGroup<int, mRows, nCols>
-{
-public:
-	_Matrix() {};
-	~_Matrix() {};
-	int getRows() { return mRows; };
-	int getCols() { return nCols; };
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////	Initialization Functions.		/////////////
+////////////////////////////////////////////////////////////////    Initialization Functions for Matrix.    /////
 template<typename T, int mRows, int nCols>
 void all(T vectorSet[mRows][nCols], T num)
 {
@@ -112,14 +87,35 @@ void random(T vectorSet[mRows][nCols], T num)
 	int i, j;
 	for (j = 0; j < nCols; ++j)
 		for (i = 0; i < mRows; ++i)
-			vectorSet[i][j] = rand() % 1000;
+			vectorSet[i][j] = (rand() % 1000) / 500.0;
 }
 
-int minDim(int mRows, int nCols)
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define transversal				0
+#define vertical				1
+#define bothsides				2
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////		//	_Matrix class.
+
+template<typename U, U num1, U num2>
+class _bGroup					// _bGroup class.
 {
-	if (mRows > nCols) return nCols;
-	return mRows;
-}
+public:
+	_bGroup() {};
+	~_bGroup() {};
+};
+
+template<int mRows, int nCols>
+class _Matrix : public _bGroup<int, mRows, nCols>
+{
+public:
+	_Matrix() {};
+	~_Matrix() {};
+	int getRowNum() { return mRows; };
+	int getColNum() { return nCols; };
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////	Expection Reporting.		/////////////////
@@ -136,8 +132,8 @@ template<typename T, int dim>	using _Vector = uMatrix<T, dim, 1>;
 template<typename T, int dim>	using _tVector = uMatrix<T, 1, dim>;
 
 template<typename T, int mRow, int nCols>	class eMatrix;
-template<typename T, int dim>	class eVector;
-template<typename T, int dim>	class etVector;
+template<typename T, int dim>	class Vector;
+template<typename T, int dim>	class tVector;
 template<typename T, int dim>	class sMatrix;
 template<typename T, int dim>	class diagMatrix;
 template<typename VT, int dim>	class rMatrix;
@@ -166,14 +162,15 @@ protected:
 	template<typename T, int mRows, int nCols> friend class eMatrix;
 	template<typename T, int dim> friend class Vector;
 	template<typename T, int dim> friend class tVector;
+	template<int dim> friend class Base;
 
 	T& meanElements(int = 0);                               // give the mean of elements to some power.
 	void mergeZero();                                       // used only in GaussianElimination. no change to rank.
 	void equalize();                                        // equalize the elements.
 	void calRank();                                         // calculate the rank of the matrix. no change to matrix.
 	void setElement(T&, int, int);                          // never used.								~rank
-	void setRow(_tVector<T, nCols>, int = 0);               //											~rank
-	void setColumn(_Vector<T, mRows>, int = 0);             //											~rank
+	void setRow(tVector<T, nCols>, int = 0);               //											~rank
+	void setColumn(Vector<T, mRows>, int = 0);             //											~rank
 	void normRow(int);                                      // Normalize the row to the first element.
 	void normCol(int);                                      // Normalize the column to the first element.
 
@@ -210,16 +207,16 @@ public:
 	~uMatrix() {};                                                                          // destructor.
 	T& getElement(int = 0, int = 0);                                                        // get the element of the matrix.
 	int getRank();                                                                          // get the rank of the matrix. no change to rank.
-	_tVector<T, nCols> getRow(int = 0);                                                     // get ith row.
-	_Vector<T, mRows> getColumn(int = 0);                                                   // get jth column.
+	tVector<T, nCols> getRow(int = 0);                                                     // get ith row.
+	Vector<T, mRows> getColumn(int = 0);                                                   // get jth column.
 	uMatrix<T, nCols, mRows> transpose();                                                   // get the transpose of the matrix.
 	uMatrix<T, mRows + nCols, mRows + nCols> diagnolization();                              // diagonalize the . update the rank.
 	void operator=(const uMatrix<T, mRows, nCols>&);                                        // =  overload. rank already set.
 	friend ostream& operator<<<T, mRows, nCols>(ostream& s, uMatrix<T, mRows, nCols>&);     // << overload.
 
 	template<typename U> operator uMatrix<U, mRows, nCols>();                               // convert to uMatrix<U>.
-	template<typename U> operator eVector<U, mRows>();                                      // convert to uMatrix<U>.
-	template<typename U> operator etVector<U, nCols>();                                     // convert to uMatrix<U>.
+	template<typename U> operator Vector<U, mRows>();                                       // convert to uMatrix<U>.
+	template<typename U> operator tVector<U, nCols>();                                      // convert to uMatrix<U>.
 	operator eMatrix<T, mRows, nCols>();                                                    // convert to eMatrix.
 	operator sMatrix<T, mRows>();                                                           // convert to sMatrix.
 	operator diagMatrix<T, mRows>();                                                        // convert to diagMatrix.
@@ -259,12 +256,12 @@ uMatrix<T, mRows, nCols>::uMatrix(int type, T num)
 {
 	switch (type)
 	{
-	case all_init:			all<T, mRows, nCols>(vectorSet, num); rank = 1; break;
-	case diag_init:			diag<T, mRows, nCols>(vectorSet, num); rank = minDim(mRows, nCols); break;
-	case upper_init:		upper<T, mRows, nCols>(vectorSet, num); rank = minDim(mRows, nCols); break;
-	case increment_init:	increment<T, mRows, nCols>(vectorSet); rank = -1; break;
-	case rand_init:			random<T, mRows, nCols>(vectorSet, num); rank = -1; break;
-	default:				all<T, mRows, nCols>(vectorSet, 0); rank = 1; break;
+	case all_init: all<T, mRows, nCols>(vectorSet, num); rank = 1; break;
+	case diag_init: diag<T, mRows, nCols>(vectorSet, num); rank = minDim(mRows, nCols); break;
+	case upper_init: upper<T, mRows, nCols>(vectorSet, num); rank = minDim(mRows, nCols); break;
+	case increment_init: increment<T, mRows, nCols>(vectorSet); rank = -1; break;
+	case rand_init: random<T, mRows, nCols>(vectorSet, num); rank = -1; break;
+	default: all<T, mRows, nCols>(vectorSet, 0); rank = 1; break;
 	}
 }
 
@@ -353,7 +350,7 @@ void uMatrix<T, mRows, nCols>::setElement(T& val, int rindex, int cindex)
 }
 
 template<typename T, int mRows, int nCols>
-void uMatrix<T, mRows, nCols>::setRow(_tVector<T, nCols> vec, int rindex)
+void uMatrix<T, mRows, nCols>::setRow(tVector<T, nCols> vec, int rindex)
 {
 	for (int j = 0; j < nCols; ++j)
 		vectorSet[rindex][j] = vec.vectorSet[0][j];
@@ -361,7 +358,7 @@ void uMatrix<T, mRows, nCols>::setRow(_tVector<T, nCols> vec, int rindex)
 }
 
 template<typename T, int mRows, int nCols>
-void uMatrix<T, mRows, nCols>::setColumn(_Vector<T, mRows> vec, int cindex)
+void uMatrix<T, mRows, nCols>::setColumn(Vector<T, mRows> vec, int cindex)
 {
 	for (int i = 0; i < mRows; ++i)
 		vectorSet[i][cindex] = vec.vectorSet[i][0];
@@ -717,7 +714,7 @@ int uMatrix<T, mRows, nCols>::getRank()													// get rank.
 }
 
 template<typename T, int mRows, int nCols>
-_tVector<T, nCols> uMatrix<T, mRows, nCols>::getRow(int rindex)							// get row.
+tVector<T, nCols> uMatrix<T, mRows, nCols>::getRow(int rindex)							// get row.
 {
 	_tVector<T, nCols> result;
 	for (int j = 0; j < nCols; ++j)
@@ -726,7 +723,7 @@ _tVector<T, nCols> uMatrix<T, mRows, nCols>::getRow(int rindex)							// get row
 }
 
 template<typename T, int mRows, int nCols>
-_Vector<T, mRows> uMatrix<T, mRows, nCols>::getColumn(int cindex)						// get column.
+Vector<T, mRows> uMatrix<T, mRows, nCols>::getColumn(int cindex)						// get column.
 {
 	_Vector<T, mRows> result;
 	for (int i = 0; i < mRows; ++i)
@@ -806,9 +803,9 @@ uMatrix<T, mRows, nCols>::operator uMatrix<U, mRows, nCols>()
 
 template<typename T, int mRows, int nCols>
 template<typename U>
-uMatrix<T, mRows, nCols>::operator eVector<U, mRows>()
+uMatrix<T, mRows, nCols>::operator Vector<U, mRows>()
 {
-	eVector<U, mRows> result;
+	Vector<U, mRows> result;
 	int i, j;
 	for (i = 0; i < mRows; ++i)
 		result.vectorSet[i][0] = vectorSet[i][0];
@@ -818,9 +815,9 @@ uMatrix<T, mRows, nCols>::operator eVector<U, mRows>()
 
 template<typename T, int mRows, int nCols>
 template<typename U>
-uMatrix<T, mRows, nCols>::operator etVector<U, nCols>()
+uMatrix<T, mRows, nCols>::operator tVector<U, nCols>()
 {
-	etVector<U, nCols> result;
+	tVector<U, nCols> result;
 	int i, j;
 	for (j = 0; j < nCols; ++j)
 		result.vectorSet[0][j] = vectorSet[0][j];

@@ -6,6 +6,7 @@
 #include <cstring>
 #include <cmath>
 #include <iomanip>
+#include "settings.h"
 #include "Matrix.h"
 using namespace std;
 
@@ -54,9 +55,6 @@ void _VectorAccessory<T, dim>::default_init()
 
 
 
-template<typename T, int dim> using _Vector = uMatrix<T, dim, 1>;
-template<typename T, int dim> using _tVector = uMatrix<T, 1, dim>;
-
 template<typename T, int dim>
 class Vector;
 template<typename T, int dim>
@@ -75,6 +73,7 @@ protected:
 	template<typename T, int mRows, int nCols> friend class uMatrix;
 
 	void zero();								// zero the vector.
+	void ones(int = 1);
 	void update();
 
 	template<int colDim>
@@ -99,7 +98,7 @@ protected:
 	Vector<T, rowDim> multipleb(const uMatrix<T, rowDim, dim>&)const;               // mat * vec.
 
 public:
-	Vector();                                        // default constructor.
+	Vector(int = 0, int = 0);                        // default constructor.
 	Vector(T&);                                      // constructor.
 	Vector(T*);                                      // constructor.
 	Vector(const Vector<T, dim>&);                   // copy constructor.
@@ -113,10 +112,15 @@ public:
 	T& getVal(int);                                  // get the ith value of the vector.
 	T& getLen() { return this->calLen(); };          // get length of the vector.
 	T* getDir() { return this->calDir(); };          // get the direction of the vector.
-	void normalize();                                // normalize the vector.
+	T& dot(Vector<T, dim>&);                         // * target vec.
+	T& project(Vector<T, dim>&);                     // get the projection on the target vec.
+	Vector<T, dim> projectVec(Vector<T, dim>&);      // get the component parallel with the target vec.
+	Vector<T, dim> extract(Vector<T, dim>&);         // get the component orthogonal to the target vec.
+	void normalize(T& = 1);                          // normalize the vector under specific scale.
 	tVector<T, dim> transpose();                     // transpose.
 	void operator=(const Vector<T, dim>);            // = overload.
-	friend ostream& operator<<<T, dim>(ostream& s, Vector<T, dim>&);    // << overload.
+	//friend ostream& operator<<<T, dim>(ostream& s, Vector<T, dim>&);    // << overload.
+	// unfinished. 2001301525
 
 	template<int colDim>
 	friend uMatrix<T, dim, colDim + 1> operator|(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my.stitch(mat, 0); };
@@ -147,9 +151,21 @@ public:
 };
 
 template<typename T, int dim>
-Vector<T, dim>::Vector() :_Vector<T, dim>(), _VectorAccessory<T, dim>()
+Vector<T, dim>::Vector(int type, int num) :_Vector<T, dim>(), _VectorAccessory<T, dim>()
 {
-	zero();
+	if (type == 0) zero();
+	if (type == 1) ones(num);
+	if (type == 2)
+	{
+		zero();
+		if (num >= 0 && num < dim)
+		{
+			this->vectorSet[num][0] = 1;
+			this->direction[num] = 1;
+			this->length = 1;
+		}
+	}
+	if (type = 3) random<T, dim, 1>(this->vectorSet, num);
 }
 
 template<typename T, int dim>
@@ -210,6 +226,18 @@ void Vector<T, dim>::zero()
 		this->direction[i] = 0;
 	}
 	this->length = 0;
+}
+
+template<typename T, int dim>
+void Vector<T, dim>::ones(int num)
+{
+	this->length = num * sqrt(dim);
+	T dirVal = 1 / this->length;
+	for (int i = 0; i < dim; i++)
+	{
+		this->vectorSet[i][0] = num;
+		this->direction[i] = dirVal;
+	}
 }
 
 template<typename T, int dim>
@@ -393,7 +421,7 @@ Vector<T, rowDim> Vector<T, dim>::multipleb(const uMatrix<T, rowDim, dim>& mat)c
 template<typename T, int dim>
 T& Vector<T, dim>::toVal()
 {
-
+	return this->vectorSet[0][0];
 }
 
 template<typename T, int dim>
@@ -403,12 +431,46 @@ T& Vector<T, dim>::getVal(int index)
 }
 
 template<typename T, int dim>
-void Vector<T, dim>::normalize()
+T& Vector<T, dim>::dot(Vector<T, dim>& vec)
+{
+	T ans = 0;
+	int i;
+	for (i = 0; i < dim; ++i)
+		ans = ans + this->vectorSet[i][0] * vec->vectorSet[i][0];
+	return ans;
+}
+
+template<typename T, int dim>
+T& Vector<T, dim>::project(Vector<T, dim>& vec)
+{
+	T ans = this->dot(vec);
+	if (vec->length > 0) ans = ans / vec->length;
+	return ans;
+}
+
+template<typename T, int dim>
+Vector<T, dim> Vector<T, dim>::projectVec(Vector<T, dim>& vec)
+{
+	Vector<T, dim> result(vec);
+	result.normalize(this->project(vec));
+	return result;
+}
+
+template<typename T, int dim>
+Vector<T, dim> Vector<T, dim>::extract(Vector<T, dim>& vec)
+{
+	Vector<T, dim> result(this);
+	result = result - this->projectVec(vec);
+	return result;
+}
+
+template<typename T, int dim>
+void Vector<T, dim>::normalize(T& scale)
 {
 	int i;
 	for (i = 0; i < dim; ++i)
-		this->vectorSet[i][0] = this->direction[i];
-	this->length = 1;
+		this->vectorSet[i][0] = this->direction[i] * scale;
+	this->length = scale;
 }
 
 template<typename T, int dim>
@@ -437,6 +499,7 @@ void Vector<T, dim>::operator=(const Vector<T, dim> vec)
 	this->length = vec.length;
 }
 
+/*
 template<typename T, int dim>
 ofstream& operator<<(ofstream &s, Vector<T, dim>& vec)
 {
@@ -446,10 +509,10 @@ ofstream& operator<<(ofstream &s, Vector<T, dim>& vec)
 		s << setw(numberSpace) << vec.vectorSet[i][0] << endl;
 	return s;
 }
+*/
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-
 
 template<int dim> using dtVector = tVector<double, dim>;
 using dtVector2d = tVector<double, 2>;
@@ -464,6 +527,7 @@ protected:
 	template<typename T, int mRows, int nCols> friend class uMatrix;
 
 	void zero();								// zero the vector.
+	void ones(int = 1);
 	void update();
 
 	template<int rowDim>
@@ -487,7 +551,7 @@ protected:
 	tVector<T, colDim> multiple(const uMatrix<T, dim, colDim>&)const;               // * mat.
 
 public:
-	tVector();                                        // default constructor.
+	tVector(int = 0, int = 0);                        // default constructor.
 	tVector(T&);                                      // constructor.
 	tVector(T*);                                      // constructor.
 	tVector(const tVector<T, dim>&);                  // copy constructor.
@@ -501,7 +565,11 @@ public:
 	T& getVal(int);                                   // get the ith value of the vector.
 	T& getLen() { return this->calLen(); };           // get length of the vector.
 	T* getDir() { return this->calDir(); };           // get the direction of the vector.
-	void normalize();                                 // normalize the vector.
+	T& dot(tVector<T, dim>&);                         // * target vec.
+	T& project(tVector<T, dim>&);                     // get the projection on the target vec.
+	tVector<T, dim> projectVec(tVector<T, dim>&);     // get the component parallel with the target vec.
+	tVector<T, dim> extract(tVector<T, dim>&);        // get the component orthogonal to the target vec.
+	void normalize(T& = 1);                           // normalize the vector under specific scale.
 	Vector<T, dim> transpose();                       // transpose.
 	void operator=(const tVector<T, dim>);            // = overload.
 	friend ofstream& operator<<<T, dim>(ofstream&, tVector<T, dim>&);     // << overload.
@@ -535,9 +603,21 @@ public:
 };
 
 template<typename T, int dim>
-tVector<T, dim>::tVector() :_tVector<T, dim>(), _VectorAccessory<T, dim>()
+tVector<T, dim>::tVector(int type, int num) : _tVector<T, dim>(), _VectorAccessory<T, dim>()
 {
-	zero();
+	if (type == 0) zero();
+	if (type == 1) ones(num);
+	if (type == 2)
+	{
+		zero();
+		if (num >= 0 && num < dim)
+		{
+			this->vectorSet[0][num] = 1;
+			this->direction[num] = 1;
+			this->length = 1;
+		}
+	}
+	if (type = 3) random<T, 1, dim>(this->vectorSet, num);
 }
 
 template<typename T, int dim>
@@ -598,6 +678,18 @@ void tVector<T, dim>::zero()
 		this->direction[i] = 0;
 	}
 	this->length = 0;
+}
+
+template<typename T, int dim>
+void tVector<T, dim>::ones(int num)
+{
+	this->length = num * sqrt(dim);
+	T dirVal = 1 / this->length;
+	for (int i = 0; i < dim; i++)
+	{
+		this->vectorSet[0][i] = num;
+		this->direction[i] = dirVal;
+	}
 }
 
 template<typename T, int dim>
@@ -787,12 +879,46 @@ T& tVector<T, dim>::getVal(int index)
 }
 
 template<typename T, int dim>
-void tVector<T, dim>::normalize()
+T& tVector<T, dim>::dot(tVector<T, dim>& vec)
+{
+	T ans = 0;
+	int i;
+	for (i = 0; i < dim; ++i)
+		ans = ans + this->vectorSet[0][i] * vec->vectorSet[0][i];
+	return ans;
+}
+
+template<typename T, int dim>
+T& tVector<T, dim>::project(tVector<T, dim>& vec)
+{
+	T ans = this->dot(vec);
+	if (vec->length > 0) ans = ans / vec->length;
+	return ans;
+}
+
+template<typename T, int dim>
+tVector<T, dim> tVector<T, dim>::projectVec(tVector<T, dim>& vec)
+{
+	tVector<T, dim> result(vec);
+	result.normalize(this->project(vec));
+	return result;
+}
+
+template<typename T, int dim>
+tVector<T, dim> tVector<T, dim>::extract(tVector<T, dim>& vec)
+{
+	tVector<T, dim> result(this);
+	result = result - this->projectVec(vec);
+	return result;
+}
+
+template<typename T, int dim>
+void tVector<T, dim>::normalize(T& scale)
 {
 	int i;
 	for (i = 0; i < dim; ++i)
-		this->vectorSet[0][i] = this->direction[i];
-	this->length = 1;
+		this->vectorSet[0][i] = this->direction[i] * scale;
+	this->length = scale;
 }
 
 template<typename T, int dim>
@@ -824,6 +950,7 @@ void tVector<T, dim>::operator=(const tVector<T, dim> tvec)
 template<typename T, int dim>
 ofstream& operator<<(ofstream& s, tVector<T, dim>& tvec)
 {
+	cout << "overload function of tVector" << endl;
 	int i;
 	cout << endl;
 	for (i = 0; i < dim; ++i)

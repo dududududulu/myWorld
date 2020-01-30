@@ -123,6 +123,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AccessoryFunc.cpp" />
     <ClCompile Include="CGeometry.cpp" />
     <ClCompile Include="myWorldTest.cpp" />
   </ItemGroup>
@@ -131,6 +132,7 @@
     <ClInclude Include="Entity.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="Reference.h" />
     <ClInclude Include="Segment.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="VectorSpace.h" />

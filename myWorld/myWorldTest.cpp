@@ -45,8 +45,19 @@ int main()
 	cout << "emat = " << emat << endl;
 	cout << "ematInv = " << ematInv << endl;
 	cout << "prod = " << prod << endl;
-	cout << "Done" << endl;
-	cout << "Please" << endl;
+	cout << "Matrix Done" << endl;
+	
+	dVector<5> vec(3, 1);
+	dtVector<4> tvec(3, 1);
+	dVector<4> resvec = emat * vec;
+	dtVector<5> restvec = tvec * emat;
+	cout << "vec = " << vec << endl;
+	cout << "tvec = " << tvec << endl;
+	cout << "emat = " << emat << endl;
+	cout << "resvec = " << resvec << endl;
+	cout << "restvec = " << restvec << endl;
+
+
 	/*dMatrix4d whymat = smat ^ imat;
 	cout <<"whymat = "<<endl<< whymat << endl;*/
 

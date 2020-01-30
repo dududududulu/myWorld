@@ -165,7 +165,7 @@ template<int SideNum>
 void CPolygon<SideNum>::scaling(double factor)
 {
 	if (factor <= 0) return;
-	size = size * factor;
+	side = side * factor;
 	realm = realm * factor;
 	this->perimeter = this->perimeter * factor;
 	this->area = this->area * factor * factor;

@@ -1,3 +1,6 @@
+#ifndef _SEGMENT_H
+#define _SEGMENT_H
+
 #include <iostream>
 #include <cstring>
 #include <cmath>
@@ -166,3 +169,6 @@ _uIndex<U> operator|(const _Segment<U>& seg, const U& val) {
 }
 
 using _Index = _uIndex<int>;
+
+
+#endif

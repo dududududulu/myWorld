@@ -10,7 +10,7 @@ using namespace std;
 
 	///////////////////////////////////////////////////////////////
 
-	File Name:              Concept.h
+	File Name:              CGeometry.cpp
 	Date of Creation:       20200129
 	Latest Revise:          20200129
 
@@ -21,8 +21,8 @@ using namespace std;
 		Concept
 		1	CGeometry
 		1	2	CLine
-		1	2	CShape: CSquare / CRectangle / CCircle / CTriangle / CPolygon / CFreeShape
-		1	2	CSolid: CCube / CCuboid / CGlobe / CCylinder / CPrism / CFreeSolid
+		1	2	CShape: CSquare / CRectangle / CCircle / CTriangle / CPolygon<SideNum> / CFreeShape
+		1	2	CSolid: CCube / CCuboid / CGlobe / CCylinder / CPrism<SideNum> / CFreeSolid
 
 
 	///////////////////////////////////////////////////////////////

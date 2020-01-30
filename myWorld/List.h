@@ -1,3 +1,6 @@
+#ifndef _LIST_H
+#define _LIST_H
+
 #include <iostream>
 using namespace std;
 
@@ -249,3 +252,6 @@ void List<T, N>::excludeIndex(int index)
 ////////////////////////////////////////////////////////////////////////
 template<typename T> using rList = List<T, rNode<T>>;
 template<typename T> using pList = List<T, pNode<T>>;
+
+
+#endif
