@@ -124,21 +124,28 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AccessoryFunc.cpp" />
-    <ClCompile Include="CFigure.cpp" />
+    <ClCompile Include="CGeometry.cpp" />
+    <ClCompile Include="Concept.cpp" />
     <ClCompile Include="Effect.cpp" />
     <ClCompile Include="myWorldTest.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="TestFile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CGeometry.h" />
     <ClInclude Include="Concept.h" />
     <ClInclude Include="Effect.h" />
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="Enviro.h" />
+    <ClInclude Include="Group.h" />
+    <ClInclude Include="InterAct.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="Reference.h" />
     <ClInclude Include="Segment.h" />
     <ClInclude Include="settings.h" />
+    <ClInclude Include="Status.h" />
     <ClInclude Include="VectorSpace.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

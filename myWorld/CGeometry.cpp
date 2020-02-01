@@ -4,6 +4,7 @@
 #include <iomanip>
 #include "settings.h"
 #include "Concept.h"
+#include "CGeometry.h"
 using namespace std;
 
 /*
@@ -12,7 +13,7 @@ using namespace std;
 
 	File Name:              CGeometry.cpp
 	Date of Creation:       20200129
-	Latest Revise:          20200129
+	Latest Revise:          20200202
 
 	Description:
 		This file defines CFigure classes.

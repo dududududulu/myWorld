@@ -41,7 +41,8 @@ public:
 	~LnBase() {};
 	bool isIdentity();
 	dVector<dim> project(dVector<dim>&);
-	void rotate(dVector<dim>&);
+	void rotate(const dVector<dim>&);
+	void rotate(const uMatrix<double, dim, dim>&);
 	void printBase();
 };
 
@@ -89,9 +90,16 @@ dVector<dim> LnBase<dim>::project(dVector<dim>& vec)
 }
 
 template<int dim>
-void LnBase<dim>::rotate(dVector<dim>& vec)
+void LnBase<dim>::rotate(const dVector<dim>& torque)
 {
+	uMatrix<double, dim, dim> R = rotator<double, dim>(torque);
+	baseMatrix = R * baseMatrix;
+}
 
+template<int dim>
+void LnBase<dim>::rotate(const uMatrix<double, dim, dim>& rotMatrix)
+{
+	baseMatrix = rotMatrix * baseMatrix;
 }
 
 template<int dim>
@@ -129,6 +137,7 @@ Ref<dim>::Ref(dVector<dim>& orig)
 {
 	origin = orig;
 }
+
 
 
 

@@ -136,7 +136,7 @@ template<typename T, int dim>	class Vector;
 template<typename T, int dim>	class tVector;
 template<typename T, int dim>	class sMatrix;
 template<typename T, int dim>	class diagMatrix;
-template<typename VT, int dim>	class rMatrix;
+template<typename T, int dim>	class rMatrix;
 
 #define identity(dim)		uMatrix<double, dim, dim>(1, 1)
 //#define uppertriangal(dim)		
@@ -160,6 +160,7 @@ protected:
 protected:
 	template<typename T, int mRows, int nCols> friend class uMatrix;
 	template<typename T, int mRows, int nCols> friend class eMatrix;
+	template<typename T, int dim> friend class rMatrix;
 	template<typename T, int dim> friend class Vector;
 	template<typename T, int dim> friend class tVector;
 	template<int dim> friend class Base;
@@ -206,7 +207,8 @@ public:
 	uMatrix(const uMatrix<T, mRows, nCols>*);                                               // copy construxctor.
 	~uMatrix() {};                                                                          // destructor.
 	virtual T getElement(int = 0)const;                                                     // get the element of the matrix.
-	T getElement(int = 0, int = 0)const;                                                    // get the element of the matrix.
+	T getElement(int, int)const;                                                            // get the element of the matrix.
+	void setElement(const T&, int, int);                                               // set the element of the matrix.
 	int getRank();                                                                          // get the rank of the matrix. no change to rank.
 	bool isZero();                                                                          // whether it is all zeros.
 	bool isIdentity();                                                                      // whether it is identity.
@@ -216,7 +218,7 @@ public:
 	uMatrix<T, mRows + nCols, mRows + nCols> diagnolization();                              // diagonalize the . update the rank.
 	void operator=(const uMatrix<T, mRows, nCols>&);                                        // =  overload. rank already set.
 	friend ostream& operator<<<T, mRows, nCols>(ostream& s, uMatrix<T, mRows, nCols>&);     // << overload.
-//	friend uMatrix<T, mRows, mRows> rotator(const dVector<mRows>&);
+	//friend uMatrix<T, mRows, mRows> rotator(const dVector<mRows>&);
 
 	template<typename U> operator uMatrix<U, mRows, nCols>();                               // convert to uMatrix<U>.
 	template<typename U> operator Vector<U, mRows>();                                       // convert to uMatrix<U>.
@@ -716,6 +718,12 @@ T uMatrix<T, mRows, nCols>::getElement(int rindex, int cindex)const							// get
 }
 
 template<typename T, int mRows, int nCols>
+void uMatrix<T, mRows, nCols>::setElement(const T& data, int rindex, int cindex)							// get element.
+{
+	vectorSet[rindex][cindex] = data;;
+}
+
+template<typename T, int mRows, int nCols>
 int uMatrix<T, mRows, nCols>::getRank()													// get rank.
 {
 	calRank();
@@ -741,8 +749,8 @@ bool uMatrix<T, mRows, nCols>::isIdentity()													// get rank.
 	for (i = 0; i < mRows; ++i)
 		for (j = 0; j < nCols; ++j)
 		{
-			if (i != j && abs(vectorSet[i][j]) > Numerical_Error) return 0;
-			if (i == j && abs(vectorSet[i][j] - 1) > Numerical_Error) return 0;
+			if (i != j && !infinitesimal(vectorSet[i][j])) return 0;
+			if (i == j && !infinitesimal(vectorSet[i][j] - 1)) return 0;
 		}
 	return 1;
 }
@@ -820,18 +828,7 @@ ostream& operator<<(ostream& s, uMatrix<T, mRows, nCols>& mat)							// << overl
 	return s;
 }
 
-//template<typename T, int mRows, int nCols>
-//uMatrix<T, mRows, mRows> rotator(const dVector<mRows>& torque)
-//{
-//	T angle = torque.getLen();
-//	dVector<mRows> axis(torque);
-//	uMatrix<T, mRows, mRows> Ea, Ca;
-//	axis.normalize();
-//	Ea = axis * axis.transpose();
-//	//Ca.vectorSet[0][1] = -axis.
-//	// 2002010140
-//	return Ea;
-//}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////	Format Conversion.		/////////////////////	public/
@@ -1186,20 +1183,36 @@ diagMatrix<T, dim> diagMatrix<T, dim>::getInv()
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////		//	rotation matrix class.
-template<typename VT, int dim>
-class rMatrix :public sMatrix<VT, dim>
+template<typename T, int dim>
+class rMatrix :public sMatrix<T, dim>
 {
-
+	Vector<T, dim> axis;
+	T angle;
 protected:
 	void normalize();
 public:
-	rMatrix() :sMatrix<VT, dim>() {};
-	rMatrix(const rMatrix<VT, dim>& mat) :sMatrix<VT, dim>(mat) {};
-	rMatrix(const rMatrix<VT, dim>* mat) :sMatrix<VT, dim>(mat) {};
+	rMatrix() :sMatrix<T, dim>() {};
+	rMatrix(const rMatrix<T, dim>& mat) :sMatrix<T, dim>(mat) {};
+	rMatrix(const rMatrix<T, dim>* mat) :sMatrix<T, dim>(mat) {};
 	~rMatrix() {
 	};
 
 };
+
+
+template<typename T, int dim>
+uMatrix<T, dim, dim> rotator(const Vector<double, dim>& torque)
+{
+	int i, j;
+	T angle = torque.getLen();
+	uMatrix<T, dim, dim> Ea, Ca, R;
+	Ea = torque * torque.transpose();
+	Ca.setElement(-torque.getElement(2), 0, 1); Ca.setElement(torque.getElement(1), 0, 2);
+	Ca.setElement(torque.getElement(2), 1, 0); Ca.setElement(-torque.getElement(0), 1, 2);
+	Ca.setElement(-torque.getElement(1), 2, 0); Ca.setElement(torque.getElement(0), 2, 1);
+	R = ((1 - cos(angle)) / (angle * angle)) * Ea + (sin(angle) / angle) * Ca + cos(angle);
+	return R;
+}
 
 
 #endif

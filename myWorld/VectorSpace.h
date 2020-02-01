@@ -40,8 +40,8 @@ protected:
 public:
 	_VectorAccessory() { revert(); };
 	~_VectorAccessory() {};
-	T getLen() { return length; };
-	T* getDir() { return direction; };
+	T getLen()const { return length; };
+	T* getDir()const { return direction; };
 };
 
 template<typename T, int dim>
@@ -87,12 +87,14 @@ public:
 	};
 	virtual T getElement(int)const;                            // get the ith element
 	virtual void setElement(const T&, int) {  };               // set the ith element
+	T getLen()const { return this->length; };
+	T* getDir()const { return this->direction; };
 	int getDim() { return dim; };                              // get dimension.
 	void normalize(const T& = 1);                              // normalize the vector under specific scale.
 	T& dot(VectorFrame<T, dim>&);                              // * target vec.
 	T& project(VectorFrame<T, dim>&);                          // get the projection on the target vec.
-	template<class VType> VType projectVec(VType&);
-	template<class VType> VType extract(VType&);
+	template<class VType> VType projectVec(VType&);            // get the component in line with the target vec.
+	template<class VType> VType extract(VType&);               // get the component perpendicular with the target vec.
 	void operator=(const VectorFrame<T, dim>);                 // = overload.
 };
 
@@ -270,7 +272,6 @@ template<typename T, int dim>
 void VectorFrame<T, dim>::vcross(const VectorFrame<T, dim>& vec)							// cross vec.
 {
 	if (dim != 3) return;
-	cout << "Cross Here!" << endl;
 	T cross[3];
 	cross[0] = getElement(1) * vec.getElement(2) - getElement(2) * vec.getElement(1);
 	cross[1] = getElement(2) * vec.getElement(0) - getElement(0) * vec.getElement(2);
@@ -392,7 +393,7 @@ public:
 	};
 	T getElement(int)const;
 	void setElement(const T&, int);
-	tVector<T, dim> transpose();                     // transpose.
+	tVector<T, dim> transpose()const;                     // transpose.
 	void operator=(const Vector<T, dim>);            // = overload.
 	//friend ostream& operator<<<T, dim>(ostream& s, Vector<T, dim>&);    // << overload.
 	// unfinished. 2001301525
@@ -607,7 +608,7 @@ void Vector<T, dim>::setElement(const T& data, int index)
 }
 
 template<typename T, int dim>
-tVector<T, dim> Vector<T, dim>::transpose()
+tVector<T, dim> Vector<T, dim>::transpose()const
 {
 	tVector<T, dim> result;
 	int i;

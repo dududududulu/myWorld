@@ -6,7 +6,8 @@
 #include <cmath>
 #include <iomanip>
 #include "settings.h"
-#include "Entity.h"
+#include "Matrix.h"
+#include "VectorSpace.h"
 #include "Concept.h"
 using namespace std;
 
@@ -36,28 +37,12 @@ using namespace std;
 
 */
 
-class Effect :public Concept
+class Effect :public Applied
 {
-protected:
-	Entity* target;
 public:
-	Effect();
-	Effect(Entity*);
+	Effect() :Applied() {};
+	Effect(Entity* tar) :Applied(tar) {};
 	~Effect() {
-		//if (target)
-			//delete target;
-	};
-	void setTarget(Entity*);
-	virtual void function() {};
-	virtual void print() {};
-};
-
-class Status :public Effect
-{
-public:
-	Status() :Effect() {};
-	Status(Entity* tar) :Effect(tar) {};
-	~Status() {
 		//if (this->target != nullptr)
 			//delete this->target;
 	};
@@ -65,63 +50,40 @@ public:
 	virtual void print() {};
 };
 
-class Motion :public Status
+class Motion :public Effect
 {
+	dVector<Dimension> translate;
+	dVector<Dimension> axis;
+	uMatrix<double, Dimension, Dimension> rotMatrix;
 public:
-	Motion() :Status() {};
-	Motion(Entity* tar) :Status(tar) {};
+	Motion() :Effect() {};
+	Motion(Entity* tar) :Effect(tar) {};
 	~Motion() {};
+	void setDrift(const dVector<Dimension>&);
+	void setRot(const dVector<Dimension>&);
+	void addDrift(const dVector<Dimension>&);
+	void addRot(const dVector<Dimension>&);
+	void function();
+	void print();
+};
+
+class Shaping :public Effect
+{
+public:
+	Shaping() :Effect() {};
+	~Shaping() {};
 	void function() {};
 	void print() {};
 };
 
-class Color :public Status
+class Filter :public Effect
 {
 public:
-	Color() :Status() {};
-	~Color() {};
+	Filter() :Effect() {};
+	~Filter() {};
 	void function() {};
 	void print() {};
 };
-
-class Tmprtr :public Status
-{
-public:
-	Tmprtr() :Status() {};
-	~Tmprtr() {};
-	void function() {};
-	void print() {};
-};
-
-
-
-class InterAction :public Effect
-{
-public:
-	InterAction() :Effect() {};
-	~InterAction() {};
-	virtual void function() {};
-	virtual void print() {};
-};
-
-class Force :public InterAction
-{
-public:
-	Force() :InterAction() {};
-	~Force() {};
-	void function() {};
-	void print() {};
-};
-
-class Illumin :public InterAction
-{
-public:
-	Illumin() :InterAction() {};
-	~Illumin() {};
-	void function() {};
-	void print() {};
-};
-
 
 
 #endif

@@ -87,7 +87,7 @@ bool effect_test()
 
 bool entity_test()
 {
-	cout << endl << "for entity:" << endl;
+	/*cout << endl << "for entity:" << endl;
 	cout << "Constructor:   ";
 	Entity ent;
 	cout << "MyTest:   ";
@@ -101,7 +101,7 @@ bool entity_test()
 	cout << "Constructor:   ";
 	Enviro env;
 	cout << "MyTest:   ";
-	env.mytest(env);
+	env.mytest(env);*/
 	
 	return 1;
 }

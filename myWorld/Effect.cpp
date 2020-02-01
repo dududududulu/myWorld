@@ -3,7 +3,8 @@
 #include <cmath>
 #include <iomanip>
 #include "settings.h"
-#include "Entity.h"
+#include "Matrix.h"
+#include "VectorSpace.h"
 #include "Effect.h"
 using namespace std;
 
@@ -14,7 +15,7 @@ using namespace std;
 
 	File Name:              Effect.cpp
 	Date of Creation:       20200131
-	Latest Revise:          20200131
+	Latest Revise:          20200202
 
 	Description:
 		This file defines Effect classes.
@@ -23,17 +24,34 @@ using namespace std;
 
 */
 
-Effect::Effect() :Concept()
+/* Functions of class Motion */
+void Motion::setDrift(const dVector<Dimension>& drift)
 {
-	target = nullptr;
+	translate = drift;
 }
 
-Effect::Effect(Entity* tar) : Concept()
+void Motion::setRot(const dVector<Dimension>& torque)
 {
-	target = tar;
+	axis = torque;
+	rotMatrix = rotator<double, Dimension>(torque);
 }
 
-void Effect::setTarget(Entity* tar)
+void Motion::addDrift(const dVector<Dimension>& drift)
 {
-	target = tar;
+	translate = translate + drift;
+}
+
+void Motion::addRot(const dVector<Dimension>& torque)
+{
+	setRot(axis + torque);
+}
+
+void Motion::function()
+{
+	//this->target->movement();
+}
+
+void Motion::print()
+{
+
 }

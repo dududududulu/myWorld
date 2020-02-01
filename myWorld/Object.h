@@ -1,5 +1,5 @@
-#ifndef _ENTITY_H
-#define _ENTITY_H
+#ifndef _OBJECT_H
+#define _OBJECT_H
 
 #include <iostream>
 #include <cstring>
@@ -7,15 +7,15 @@
 #include "Matrix.h"
 #include "VectorSpace.h"
 #include "Reference.h"
-#include "Status.h"
+#include "Entity.h"
 using namespace std;
 
 /*
 
 	///////////////////////////////////////////////////////////////
 
-	File Name:              Entity.h
-	Date of Creation:       20200130
+	File Name:              Object.h
+	Date of Creation:       20200202
 	Latest Revise:          20200202
 
 	Description:
@@ -32,54 +32,24 @@ using namespace std;
 		1	2	3	4	5	Solid: Cube / Cuboid / Globe / Cylinder / Prism / Ditto
 		1	2	3	4	*Pattern
 		1	2	3	Combine
-		1	2	Enviro
-		1	2	3	LightSource
-		1	2	3	Field
-		1	2	3	4	Gravity
-		1	Group
-		1	2	Structure
-		1	2	3	Array
-		1	2	Stew
-		1	2	3	Machine
-		1	2	3	Scene
+
 
 
 	///////////////////////////////////////////////////////////////
 
 */
 
+
 ///////////////////////////////////
-// Class Entity.
-
-class Entity
-{
-protected:
-	string Name;
-	Ref<Dimension>* ref;
-	Status status;
-	//int validTime;
-	//int validZone;
-protected:
-public:
-	Entity() {};
-	Entity(string&) {};
-	Entity(string&, int, int) {};
-	~Entity() {};
-	virtual void init() {};
-	virtual void status_update();
-	virtual void print() {};
-};
-
-class Individual :public Entity
+// Class Object.
+class Object :public Individual
 {
 public:
-	Individual() :Entity() {};
-	~Individual() {};
+	Object() :Individual() {};
+	~Object() {};
 	virtual void init() {};
 	virtual void print() {};
 };
-
-
 
 
 #endif

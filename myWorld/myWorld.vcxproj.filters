@@ -21,9 +21,6 @@
     <ClCompile Include="Effect.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="CFigure.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Object.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -31,6 +28,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="TestFile.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CGeometry.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Concept.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -60,6 +63,24 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Effect.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Group.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="InterAct.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Status.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CGeometry.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Enviro.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
