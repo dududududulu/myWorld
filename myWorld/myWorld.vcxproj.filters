@@ -30,6 +30,9 @@
     <ClCompile Include="myWorldTest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="TestFile.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="settings.h">

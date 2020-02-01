@@ -15,7 +15,7 @@ using namespace std;
 
 	File Name:              VectorSpace.h
 	Date of Creation:       20200102
-	Latest Revise:          20200129
+	Latest Revise:          20200201
 
 	Description:
 		This file claims and defines template class Vector and tVector for any type of statistic data and any dimension.
@@ -85,10 +85,10 @@ public:
 		// unfinished. inform needed.
 		//cout << "- Destructor Vector." << endl;
 	};
-	virtual T getElement(int)const;                                // get the ith element
-	virtual void setElement(const T&, int) {  };                        // set the ith element
+	virtual T getElement(int)const;                            // get the ith element
+	virtual void setElement(const T&, int) {  };               // set the ith element
 	int getDim() { return dim; };                              // get dimension.
-	void normalize(const T& = 1);                                   // normalize the vector under specific scale.
+	void normalize(const T& = 1);                              // normalize the vector under specific scale.
 	T& dot(VectorFrame<T, dim>&);                              // * target vec.
 	T& project(VectorFrame<T, dim>&);                          // get the projection on the target vec.
 	template<class VType> VType projectVec(VType&);
@@ -179,11 +179,9 @@ void VectorFrame<T, dim>::ones(int num)
 {
 	this->length = num * sqrt(dim);
 	T dirVal = 1 / this->length;
-	cout << "Hello here Ones: num = " << num << ",   dirVal = " << dirVal << endl;
 	for (int i = 0; i < dim; i++)
 	{
 		setElement(num, i);
-		cout << getElement(i)<<"   ";
 		this->direction[i] = dirVal;
 	}
 }

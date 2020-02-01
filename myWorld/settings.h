@@ -20,10 +20,15 @@ using namespace std;
 #define charSpace        10
 
 
-/* Functions */
+/* Accessory Functions */
 int minDim(int, int);
 bool infinitesimal(double);
 
-
+/* Test Functions */
+bool all_test();
+bool matrix_test();
+bool geometry_test();
+bool effect_test();
+bool entity_test();
 
 #endif
