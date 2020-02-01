@@ -39,17 +39,19 @@ protected:
 public:
 	LnBase(int = 0);
 	~LnBase() {};
+	bool isIdentity();
 	dVector<dim> project(dVector<dim>&);
+	void rotate(dVector<dim>&);
 	void printBase();
 };
 
 template<int dim>
 LnBase<dim>::LnBase(int type)
 {
-	if (type == 0) baseMatrix = identity(dim);
+	if (type == 0) baseMatrix = identity(dim);     // default: identity
 	if (type == 1)
 	{
-		//baseMatrix;
+		// random baseMatrix;
 		// unfinished. 2001301424
 	}
 }
@@ -75,9 +77,21 @@ void LnBase<dim>::SchmitOrth()
 }
 
 template<int dim>
+bool LnBase<dim>::isIdentity()
+{
+	return baseMatrix.isIdentity();
+}
+
+template<int dim>
 dVector<dim> LnBase<dim>::project(dVector<dim>& vec)
 {
 	return baseMatrix.transpose() * vec;
+}
+
+template<int dim>
+void LnBase<dim>::rotate(dVector<dim>& vec)
+{
+
 }
 
 template<int dim>
@@ -95,16 +109,27 @@ template<int dim> class dRef;
 template<int dim>
 class Ref
 {
-	Point<dim> origin;
-	LnBase<dim> base;
+	dVector<dim> origin;        // default: all zeros
+	LnBase<dim> base;           // default: identity
 public:
-	Ref();
+	Ref() {};
+	Ref(dVector<dim>&);
+	Ref(dVector<dim>&, dMatrix<dim, dim>);
 	~Ref() {};
 	bool isBalanced();
 	bool isAbsolute();
-	Point<dim> mapping(Point<dim>&);
+	dVector<dim> revert(dVector<dim>&);                       // revert the vector in this to absolute reference
+	dVector<dim> project(dVector<dim>&);                      // project the absolute vector to this
+	dVector<dim> project(dVector<dim>&, Ref<dim>&);           // project the Ref vector to this
 
 };
+
+template<int dim>
+Ref<dim>::Ref(dVector<dim>& orig)
+{
+	origin = orig;
+}
+
 
 
 

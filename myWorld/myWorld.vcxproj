@@ -124,11 +124,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AccessoryFunc.cpp" />
-    <ClCompile Include="CGeometry.cpp" />
+    <ClCompile Include="CFigure.cpp" />
+    <ClCompile Include="Effect.cpp" />
     <ClCompile Include="myWorldTest.cpp" />
+    <ClCompile Include="Object.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Concept.h" />
+    <ClInclude Include="Effect.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="Matrix.h" />

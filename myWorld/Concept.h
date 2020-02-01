@@ -8,6 +8,7 @@
 #include "settings.h"
 #include "Matrix.h"
 #include "VectorSpace.h"
+#include "Entity.h"
 using namespace std;
 
 /*
@@ -23,10 +24,16 @@ using namespace std;
 
 	Structure of Classes:
 		Concept
-		1	CGeometry
-		1	2	CLine
-		1	2	CShape: CSquare / CRectangle / CCircle / CPolygon / CFreeShape
-		1	2	CSolid: CCube / CCuboid / CGlobe / CCylinder / CPrism / CFreeSolid
+		1	CFigure
+		1	2	CGeometry
+		1	2	3	CLine
+		1	2	3	CShape: CSquare / CRectangle / CCircle / CPolygon<SideNum> / CFreeShape / *CCurve
+		1	2	3	CSolid: CCube / CCuboid / CGlobe / CCylinder / CPrism<SideNum> / CFreeSolid / *CSurface
+		1	2	*CPattern
+		1	Effect
+		1	2	Motion
+		1	2	Force
+		1	2	Light
 				
 
 	///////////////////////////////////////////////////////////////
@@ -42,10 +49,19 @@ public:
 	// 2001291652.
 };
 
-class CGeometry:public Concept
+class CFigure :public Concept
 {
 public:
-	CGeometry():Concept() {};
+	CFigure() :Concept() {};
+	~CFigure() {};
+	virtual void scaling(double) {};
+	virtual void print() {};
+};
+
+class CGeometry:public CFigure
+{
+public:
+	CGeometry():CFigure() {};
 	~CGeometry() {};
 	virtual void scaling(double) {};
 	virtual void print() {};
@@ -380,6 +396,7 @@ void CPrism<SideNum>::print()
 	cout << "    Volume of the Prism = " << this->volume << endl;
 	cout << endl;
 }
+
 
 
 #endif

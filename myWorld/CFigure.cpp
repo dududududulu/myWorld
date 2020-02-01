@@ -15,7 +15,7 @@ using namespace std;
 	Latest Revise:          20200129
 
 	Description:
-		This file claims and defines Concept classes.
+		This file defines CFigure classes.
 
 	Structure of Classes:
 		Concept

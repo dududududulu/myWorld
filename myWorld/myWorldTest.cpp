@@ -1,9 +1,13 @@
 #include <iostream>
 #include "settings.h"
-#include "Segment.h"
+//#include "Segment.h"
+//#include "VectorSpace.h"
+//#include "Matrix.h"
+#include "Concept.h"
+#include "Effect.h"
+#include "Entity.h"
 #include "VectorSpace.h"
 #include "Matrix.h"
-#include "Concept.h"
 using namespace std;
 
 int main()
@@ -49,13 +53,28 @@ int main()
 	
 	dVector<5> vec(3, 1);
 	dtVector<4> tvec(3, 1);
-	dVector<4> resvec = emat * vec;
+	dVector<4> resvec;
+	resvec = emat * vec;
 	dtVector<5> restvec = tvec * emat;
 	cout << "vec = " << vec << endl;
 	cout << "tvec = " << tvec << endl;
 	cout << "emat = " << emat << endl;
 	cout << "resvec = " << resvec << endl;
 	cout << "restvec = " << restvec << endl;
+	vec.normalize(5);
+	cout << "vec -n5 = " << vec << endl;
+	dVector<5> newvec(1, 6);
+	cout << "newvec = " << newvec << endl;
+
+	dVector3d xvec(2, 0);
+	dVector3d yvec(1, 1);
+	uMatrix<double, 3, 2> xoy = xvec | yvec;
+	dVector3d zvec = xvec ^ yvec;
+	uMatrix<double, 3, 2> ctest = zvec ^ xoy;
+	cout << "xvec = " << xvec << endl;
+	cout << "yvec = " << yvec << endl;
+	cout << "zvec = " << zvec << endl;
+	cout << "ctest = " << ctest << endl;
 
 
 	/*dMatrix4d whymat = smat ^ imat;
@@ -76,12 +95,31 @@ int main()
 	//_uIndex<double> index = prior | 0.0 | 9.3;
 	//cout << index;
 
-	CShape shape;
+	/*CShape shape;
 	CLine geo;
 	CGeometry* test = &shape;
 	test->print();
 	test = &geo;
-	test->print();
+	test->print();*/
+
+	//Entity ent;
+	//Effect eff(&ent);
+	//Status stat(&ent);
+	cout << endl << "for entity:" << endl;
+	cout << "Constructor:   ";
+	Entity ent;
+	cout << "MyTest:   ";
+	ent.mytest(ent);
+	cout << endl << "for object:" << endl;
+	cout << "Constructor:   ";
+	Object obj;
+	cout << "MyTest:   ";
+	obj.mytest(obj);
+	cout << endl << "for enviro:" << endl;
+	cout << "Constructor:   ";
+	Enviro env;
+	cout << "MyTest:   ";
+	env.mytest(env);
 
 
 	return 0;

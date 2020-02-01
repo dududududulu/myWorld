@@ -6,6 +6,8 @@
 #include "settings.h"
 #include "Matrix.h"
 #include "VectorSpace.h"
+#include "Reference.h"
+#include "Concept.h"
 using namespace std;
 
 /*
@@ -39,16 +41,19 @@ using namespace std;
 
 class Entity
 {
+	Ref<Dimension> ref;
 	string Name;
-	int validTime;
-	int validZone;
+	//int validTime;
+	//int validZone;
 public:
-	Entity();
-	Entity(string&);
-	Entity(string&, int, int);
+	Entity() { test(); };
+	Entity(string&) {};
+	Entity(string&, int, int) {};
 	~Entity() {};
-	virtual void init();
-	virtual void print();
+	virtual void init() {};
+	virtual void print() {};
+	virtual void test() { cout << "Entity!" << endl; };
+	void mytest(Entity& ent) { ent.test(); };
 };
 
 ///////////////////////////////////
@@ -56,10 +61,23 @@ public:
 class Object :public Entity
 {
 public:
-	Object();
+	Object():Entity() {};
 	~Object() {};
-	virtual void init();
-	virtual void print();
+	virtual void init() {};
+	virtual void print() {};
+	void test() { cout << "Object!" << endl; };
+};
+
+///////////////////////////////////
+// Class Object.
+class Enviro :public Entity
+{
+public:
+	Enviro():Entity() {};
+	~Enviro() {};
+	virtual void init() {};
+	virtual void print() {};
+	void test() { cout << "Enviro!" << endl; };
 };
 
 

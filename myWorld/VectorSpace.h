@@ -1,4 +1,3 @@
-
 #ifndef _VECTORSPACE_H
 #define _VECTORSPACE_H
 
@@ -37,22 +36,313 @@ protected:
 	T length;
 	T direction[dim];
 protected:
-	void default_init();
+	void revert();
 public:
-	_VectorAccessory() { default_init(); };
+	_VectorAccessory() { revert(); };
 	~_VectorAccessory() {};
 	T getLen() { return length; };
 	T* getDir() { return direction; };
 };
 
 template<typename T, int dim>
-void _VectorAccessory<T, dim>::default_init()
+void _VectorAccessory<T, dim>::revert()
 {
 	length = -1;
 	for (int i = 0; i < dim; ++i)
 		direction[i] = 0;
 }
 
+
+template<typename T, int dim>
+class VectorFrame :public _VectorAccessory<T, dim>
+{
+protected:
+	template<typename T, int mRows, int nCols> friend class uMatrix;
+
+	void default_init(int = 0, int = 0);
+	void data_init(T&);
+	void data_init(T*);
+	void copy_init(const VectorFrame<T, dim>&);
+	void copy_init(const VectorFrame<T, dim>*);
+
+	void zero();                                               // zero the vector.
+	void ones(int = 1);                                        // every entry is identical
+	void calLen();                                             // calculate length
+	void calDir();                                             // calculate direction
+	void update();                                             // update both length and direction
+
+	void vadd(const VectorFrame<T, dim>&);                     // + vec.
+	void vadd(const T&);                                       // + k.
+	void vminus(const VectorFrame<T, dim>&);                   // - vec.
+	void vminusf(const T&);                                    // k - my.
+	void v_multiple(const T&);                                 // .* k.
+	void v_multiple(const VectorFrame<T, dim>&);               // .* vec.
+	void vcross(const VectorFrame<T, dim>&);                   // cross vec.
+
+public:
+	VectorFrame() {};                                          // default constructor.
+	~VectorFrame() {                                           // destructor.
+		// unfinished. inform needed.
+		//cout << "- Destructor Vector." << endl;
+	};
+	virtual T getElement(int)const;                                // get the ith element
+	virtual void setElement(const T&, int) {  };                        // set the ith element
+	int getDim() { return dim; };                              // get dimension.
+	void normalize(const T& = 1);                                   // normalize the vector under specific scale.
+	T& dot(VectorFrame<T, dim>&);                              // * target vec.
+	T& project(VectorFrame<T, dim>&);                          // get the projection on the target vec.
+	template<class VType> VType projectVec(VType&);
+	template<class VType> VType extract(VType&);
+	void operator=(const VectorFrame<T, dim>);                 // = overload.
+};
+
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::default_init(int type, int num)
+{
+	if (type == 0) zero();
+	if (type == 1) ones(num);
+	if (type == 2)
+	{
+		zero();
+		if (num >= 0 && num < dim)
+		{
+			setElement(1, num);
+			this->direction[num] = 1;
+			this->length = 1;
+		}
+	}
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::data_init(T& data)
+{
+	for (int i = 0; i < dim; i++)
+		setElement(data, i);
+	update();
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::data_init(T* data)
+{
+	int i = 0;
+	bool iflag = 0, oflag = 0;		// iflag for insufficient; oflag for overflow.
+	while (i < dim && data + i)
+	{
+		setElement(data[i], i);
+		++i;
+	}
+	if (i < dim)
+	{
+		iflag = 1;	// unfinished. warning needed.
+		while (i < dim) setElement(0, i++);
+	}
+	if (data + i) oflag = 1;	//unfinished. warning needed.
+	update();
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::copy_init(const VectorFrame<T, dim>& vec)
+{
+	for (int i = 0; i < dim; i++)
+	{
+		setElement(vec.getElement(i), i);
+		this->direction[i] = vec.direction[i];
+	}
+	this->length = vec.length;
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::copy_init(const VectorFrame<T, dim>* vec)
+{
+	for (int i = 0; i < dim; i++)
+	{
+		setElement(vec->getElement(i), i);
+		this->direction[i] = vec->direction[i];
+	}
+	this->length = vec->length;
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::zero()
+{
+	for (int i = 0; i < dim; i++)
+	{
+		setElement(0, i);
+		this->direction[i] = 0;
+	}
+	this->length = 0;
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::ones(int num)
+{
+	this->length = num * sqrt(dim);
+	T dirVal = 1 / this->length;
+	cout << "Hello here Ones: num = " << num << ",   dirVal = " << dirVal << endl;
+	for (int i = 0; i < dim; i++)
+	{
+		setElement(num, i);
+		cout << getElement(i)<<"   ";
+		this->direction[i] = dirVal;
+	}
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::calLen()
+{
+	int i;
+	this->length = 0;
+	for (i = 0; i < dim; i++)
+		this->length = this->length + getElement(i) * getElement(i);
+	this->length = sqrt(this->length);
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::calDir()
+{
+	int i;
+	if (this->length < 0) calLen();
+	if (this->length == 0)
+		for (i = 0; i < dim; i++)
+			this->direction[i] = 0;
+	else
+		for (i = 0; i < dim; i++)
+			this->direction[i] = getElement(i) / this->length;
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::update()
+{
+	calLen();
+	calDir();
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::vadd(const VectorFrame<T, dim>& vec)									// + vec.
+{
+	for (int i = 0; i < dim; ++i) setElement(getElement(i) + vec.getElement(i), i);
+	update();
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::vadd(const T& k)												// + k.
+{
+	for (int i = 0; i < dim; ++i) setElement(getElement(i) + k, i);
+	update();
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::vminus(const VectorFrame<T, dim>& vec)								// - vec.
+{
+	for (int i = 0; i < dim; ++i) setElement(getElement(i) - vec.getElement(i), i);;
+	update();
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::vminusf(const T& k)											// k - my.
+{
+	for (int i = 0; i < dim; ++i) setElement(k - getElement(i), i);;
+	update();
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::v_multiple(const T& k)											// .* k.
+{
+	int i;
+	for (i = 0; i < dim; ++i) setElement(k * getElement(i), i);;
+	if (k >= 0)
+		this->length = this->length * k;
+	else
+	{
+		this->length = this->length * (-k);
+		for (i = 0; i < dim; ++i)
+			this->direction[i] = -this->direction[i];
+	}
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::v_multiple(const VectorFrame<T, dim>& vec)							// .* vec.
+{
+	for (int i = 0; i < dim; ++i) setElement(getElement(i) - vec.getElement(i), i);
+	update();
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::vcross(const VectorFrame<T, dim>& vec)							// cross vec.
+{
+	if (dim != 3) return;
+	cout << "Cross Here!" << endl;
+	T cross[3];
+	cross[0] = getElement(1) * vec.getElement(2) - getElement(2) * vec.getElement(1);
+	cross[1] = getElement(2) * vec.getElement(0) - getElement(0) * vec.getElement(2);
+	cross[2] = getElement(0) * vec.getElement(1) - getElement(1) * vec.getElement(0);
+	for (int i = 0; i < 3; ++i) setElement(cross[i], i);
+}
+
+template<typename T, int dim>
+T& VectorFrame<T, dim>::dot(VectorFrame<T, dim>& vec)
+{
+	T ans = 0;
+	int i;
+	for (i = 0; i < dim; ++i)
+		ans = ans + getElement(i) * getElement(i);
+	return ans;
+}
+
+template<typename T, int dim>
+T& VectorFrame<T, dim>::project(VectorFrame<T, dim>& vec)
+{
+	T ans = this->dot(vec);
+	if (!infinitesimal(vec->length)) ans = ans / vec->length;
+	return ans;
+}
+
+template<typename T, int dim>
+template<class VType>
+VType VectorFrame<T, dim>::projectVec(VType& vec)
+{
+	VType result(vec);
+	result.normalize(this->project(vec));
+	return result;
+}
+
+template<typename T, int dim>
+template<class VType>
+VType VectorFrame<T, dim>::extract(VType& vec)
+{
+	VType result(this);
+	result = result - this->projectVec(vec);
+	return result;
+}
+
+template<typename T, int dim>
+T VectorFrame<T, dim>::getElement(int index)const
+{
+	T ans = 0;
+	return ans;
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::normalize(const T& scale)
+{
+	int i;
+	for (i = 0; i < dim; ++i)
+		setElement(this->direction[i] * scale, i);
+	this->length = scale;
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::operator=(const VectorFrame<T, dim> vec)
+{
+	int i;
+	for (i = 0; i < dim; ++i)
+	{
+		setElement(vec.getElement(i), i);
+		this->direction[i] = vec.direction[i];
+	}
+	this->length = vec.length;
+}
 
 
 template<typename T, int dim>
@@ -61,20 +351,18 @@ template<typename T, int dim>
 class tVector;
 
 template<int dim> using dVector = Vector<double, dim>;
+template<typename T> using Vector2d = Vector<T, 2>;
+template<typename T> using Vector3d = Vector<T, 3>;
 using dVector2d = Vector<double, 2>;
 using dVector3d = Vector<double, 3>;
 
 template<typename T, int dim>
-class Vector :public _Vector<T, dim>, public _VectorAccessory<T, dim>
+class Vector :public _Vector<T, dim>, public VectorFrame<T, dim>
 {
 protected:
 	template<typename T, int dim> friend class Vector;
 	template<typename T, int dim> friend class tVector;
 	template<typename T, int mRows, int nCols> friend class uMatrix;
-
-	void zero();								// zero the vector.
-	void ones(int = 1);
-	void update();
 
 	template<int colDim>
 	uMatrix<T, dim, colDim + 1> stitch(const uMatrix<T, dim, colDim>&, bool = 0)const;    // stitch with mat from the right.
@@ -82,14 +370,11 @@ protected:
 	template<int newDim>
 	Vector<T, dim + newDim> graft(const Vector<T, newDim>&)const;                         // graft mat from buttom.
 
-	Vector<T, dim> add(const Vector<T, dim>&)const;                                 // + vec.
-	Vector<T, dim> add(const T&)const;                                              // + k.
-	Vector<T, dim> minus(const Vector<T, dim>&)const;                               // - vec.
-	Vector<T, dim> minusf(const T&)const;                                           // k - my.
-	Vector<T, dim> _multiple(const T&)const;                                        // .* k.
-	Vector<T, dim> _multiple(const Vector<T, dim>&)const;                           // .* vec.
-	Vector<T, dim> cross(const Vector<T, dim>& vec)const;                           // cross vec.
+	Vector<T, dim> arithmetic(const Vector<T, dim>&, int)const;                                 // + vec.
+	Vector<T, dim> arithmetic(const T&, int)const;                                  // + vec.
 
+	template<int colDim>
+	uMatrix<T, dim, colDim> cross(const uMatrix<T, dim, colDim>& vec)const;             // cross vec.
 	template<int colDim>
 	uMatrix<T, dim, colDim> multiple(const tVector<T, colDim>&)const;               // * tvec.
 	template<int colDim>
@@ -98,8 +383,8 @@ protected:
 	Vector<T, rowDim> multipleb(const uMatrix<T, rowDim, dim>&)const;               // mat * vec.
 
 public:
-	Vector(int = 0, int = 0);                        // default constructor.
-	Vector(T&);                                      // constructor.
+	Vector(int type = 0, int num = 0);                                              // default constructor.
+	Vector(T&);		                                 // constructor.
 	Vector(T*);                                      // constructor.
 	Vector(const Vector<T, dim>&);                   // copy constructor.
 	Vector(const Vector<T, dim>*);                   // copy constructor.
@@ -107,16 +392,8 @@ public:
 		// unfinished. inform needed.
 		//cout << "- Destructor Vector." << endl;
 	};
-	T& toVal();                                      // convert to T if dimension == 1.
-	int getDim() { return dim; };                    // get dimension.
-	T& getVal(int);                                  // get the ith value of the vector.
-	T& getLen() { return this->calLen(); };          // get length of the vector.
-	T* getDir() { return this->calDir(); };          // get the direction of the vector.
-	T& dot(Vector<T, dim>&);                         // * target vec.
-	T& project(Vector<T, dim>&);                     // get the projection on the target vec.
-	Vector<T, dim> projectVec(Vector<T, dim>&);      // get the component parallel with the target vec.
-	Vector<T, dim> extract(Vector<T, dim>&);         // get the component orthogonal to the target vec.
-	void normalize(T& = 1);                          // normalize the vector under specific scale.
+	T getElement(int)const;
+	void setElement(const T&, int);
 	tVector<T, dim> transpose();                     // transpose.
 	void operator=(const Vector<T, dim>);            // = overload.
 	//friend ostream& operator<<<T, dim>(ostream& s, Vector<T, dim>&);    // << overload.
@@ -130,17 +407,21 @@ public:
 	template<int newDim>
 	friend Vector<T, dim + newDim> operator/(const Vector<T, dim>& my, const Vector<T, newDim>& vec) { return my.graft(vec); };
 
-	friend Vector<T, dim> operator+(const Vector<T, dim>& my, const Vector<T, dim>& vec) { return my.add(vec); };
-	friend Vector<T, dim> operator+(const Vector<T, dim >& my, const T& k) { return my.add(k); };
-	friend Vector<T, dim> operator+(const T& k, const Vector<T, dim>& my) { return my.add(k); };
-	friend Vector<T, dim> operator-(const Vector<T, dim>& my, const Vector<T, dim>& vec) { return my.minus(vec); };
-	friend Vector<T, dim> operator-(const Vector<T, dim>& my, const T& k) { return my.add(-k); };
-	friend Vector<T, dim> operator-(const T& k, const Vector<T, dim>& my) { return my.minusf(k); };
+	friend Vector<T, dim> operator+(const Vector<T, dim>& my, const Vector<T, dim>& vec) { return my.arithmetic(vec, 0); };
+	friend Vector<T, dim> operator+(const Vector<T, dim >& my, const T& k) { return my.arithmetic(k, 0); };
+	friend Vector<T, dim> operator+(const T& k, const Vector<T, dim>& my) { return my.arithmetic(k, 0); };
+	friend Vector<T, dim> operator-(const Vector<T, dim>& my, const Vector<T, dim>& vec) { return my.arithmetic(vec, 1); };
+	friend Vector<T, dim> operator-(const Vector<T, dim>& my, const T& k) { return my.arithmetic(-k, 0); };
+	friend Vector<T, dim> operator-(const T& k, const Vector<T, dim>& my) { return my.arithmetic(k, 1); };
 
-	friend Vector<T, dim> operator*(const Vector<T, dim>& my, const T& k) { return my._multiple(k); }
-	friend Vector<T, dim> operator*(const Vector<T, dim>& my, const Vector<T, dim>& vec) { return my._multiple(vec); }
-	friend Vector<T, dim> operator^(const Vector<T, dim>& my, const Vector<T, dim>& vec) {return my.cross(vec); }
+	friend Vector<T, dim> operator*(const Vector<T, dim>& my, const T& k) { return my.arithmetic(k, 2); }
+	friend Vector<T, dim> operator*(const Vector<T, dim>& my, const Vector<T, dim>& vec) { return my.arithmetic(vec, 2); }
+	friend Vector<T, dim> operator^(const Vector<T, dim>& my, const Vector<T, dim>& vec) { return my.arithmetic(vec, 3); }
 
+	template<int colDim>
+	friend uMatrix<T, dim, colDim> operator^(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my.cross(mat); }
+	template<int colDim>
+	friend uMatrix<T, dim, colDim> operator^(const uMatrix<T, dim, colDim>& mat, const Vector<T, dim>& my) { return my.cross(mat); }
 	template<int colDim>
 	friend uMatrix<T, dim, colDim> operator*(const Vector<T, dim>& my, const tVector<T, colDim>& tvec) { return my.multiple(tvec); }
 	template<int colDim>
@@ -151,111 +432,36 @@ public:
 };
 
 template<typename T, int dim>
-Vector<T, dim>::Vector(int type, int num) :_Vector<T, dim>(), _VectorAccessory<T, dim>()
+Vector<T, dim>::Vector(int type, int num)
 {
-	if (type == 0) zero();
-	if (type == 1) ones(num);
-	if (type == 2)
-	{
-		zero();
-		if (num >= 0 && num < dim)
-		{
-			this->vectorSet[num][0] = 1;
-			this->direction[num] = 1;
-			this->length = 1;
-		}
-	}
-	if (type = 3) random<T, dim, 1>(this->vectorSet, num);
-}
+	this->default_init(type, num);
+	if (type == 3) random<T, dim, 1>(this->vectorSet, num);
+	this->update();
+};
 
 template<typename T, int dim>
 Vector<T, dim>::Vector(T& data)
 {
-	for (int i = 0; i < dim; i++)
-		this->vectorSet[i][0] = data;
-	update();
-}
+	this->data_init(data);
+};
 
 template<typename T, int dim>
 Vector<T, dim>::Vector(T* data)
 {
-	int i = 0;
-	bool iflag = 0, oflag = 0;		// iflag for insufficient; oflag for overflow.
-	while (i < dim && data + i)
-	{
-		this->vectorSet[i][0] = data[i];
-		++i;
-	}
-	if (i < dim)
-	{
-		iflag = 1;	// unfinished. warning needed.
-		while (i < dim) this->vectorSet[i++][0] = 0;
-	}
-	if (data + i) oflag = 1;	//unfinished. warning needed.
-	update();
-}
+	this->data_init(data);
+};
 
 template<typename T, int dim>
 Vector<T, dim>::Vector(const Vector<T, dim>& vec)
 {
-	for (int i = 0; i < dim; i++)
-	{
-		this->vectorSet[i][0] = vec.vectorSet[i][0];
-		this->direction[i] = vec.direction[i];
-	}
-	this->length = vec.length;
-}
+	this->copy_init(vec);
+};
 
 template<typename T, int dim>
 Vector<T, dim>::Vector(const Vector<T, dim>* vec)
 {
-	for (int i = 0; i < dim; i++)
-	{
-		this->vectorSet[i][0] = vec->vectorSet[i][0];
-		this->direction[i] = vec->direction[i];
-	}
-	this->length = vec->length;
-}
-
-template<typename T, int dim>
-void Vector<T, dim>::zero()
-{
-	for (int i = 0; i < dim; i++)
-	{
-		this->vectorSet[i][0] = 0;
-		this->direction[i] = 0;
-	}
-	this->length = 0;
-}
-
-template<typename T, int dim>
-void Vector<T, dim>::ones(int num)
-{
-	this->length = num * sqrt(dim);
-	T dirVal = 1 / this->length;
-	for (int i = 0; i < dim; i++)
-	{
-		this->vectorSet[i][0] = num;
-		this->direction[i] = dirVal;
-	}
-}
-
-template<typename T, int dim>
-void Vector<T, dim>::update()
-{
-	int i;
-	this->length = 0;
-	for (i = 0; i < dim; i++)
-		this->length = this->length + this->vectorSet[i][0] * this->vectorSet[i][0];
-	this->length = sqrt(this->length);
-	
-	if (this->length == 0)
-		for (i = 0; i < dim; i++)
-			this->direction[i] = 0;
-	else
-		for (i = 0; i < dim; i++)
-			this->direction[i] = this->vectorSet[i][0] / this->length;
-}
+	this->copy_init(vec);
+};
 
 template<typename T, int dim>
 template<int colDim>
@@ -267,7 +473,7 @@ uMatrix<T, dim, colDim + 1> Vector<T, dim>::stitch(const uMatrix<T, dim, colDim>
 	{
 		if (style)
 		{
-			result.vectorSet[i][0] = this->vectorSet[i][0];
+			result.vectorSet[i][0] = getElement(i);
 			for (j = 0; j < colDim; ++j)
 				result.vectorSet[i][j + 1] = mat.vectorSet[i][j];
 		}
@@ -275,7 +481,7 @@ uMatrix<T, dim, colDim + 1> Vector<T, dim>::stitch(const uMatrix<T, dim, colDim>
 		{
 			for (j = 0; j < colDim; ++j)
 				result.vectorSet[i][j] = mat.vectorSet[i][j];
-			result.vectorSet[i][colDim] = this->vectorSet[i][0];
+			result.vectorSet[i][colDim] = getElement(i);
 		}
 	}
 	return result;
@@ -288,8 +494,8 @@ uMatrix<T, dim, 2> Vector<T, dim>::stitch(const Vector<T, dim>& vec)const							
 	int i;
 	for (i = 0; i < dim; ++i)
 	{
-		result.vectorSet[i][0] = this->vectorSet[i][0];
-		result.vectorSet[i][1] = vec.vectorSet[i][0];
+		result.vectorSet[i][0] = getElement(i);
+		result.vectorSet[i][1] = vec.getElement(i);
 	}
 	return result;
 }
@@ -300,83 +506,55 @@ Vector<T, dim + newDim> Vector<T, dim>::graft(const Vector<T, newDim>& vec)const
 {
 	Vector<T, dim + newDim> result;
 	int i;
-	for (i = 0; i < dim; ++i) result.vectorSet[i][0] = this->vectorSet[i][0];
-	for (i = 0; i < newDim; ++i) result.vectorSet[i + dim][0] = vec.vectorSet[i][0];
+	for (i = 0; i < dim; ++i) result.setElement(getElement(i), i);
+	for (i = 0; i < newDim; ++i) result.setElement(vec.getElement(i), i + dim);
 	result.update();
 	return result;
 }
 
 template<typename T, int dim>
-Vector<T, dim> Vector<T, dim>::add(const Vector<T, dim>& vec)const									// + vec.
+Vector<T, dim> Vector<T, dim>::arithmetic(const Vector<T, dim>& vec, int type)const
 {
-	Vector<T, dim> result;
-	int i;
-	for (i = 0; i < dim; ++i) result.vectorSet[i][0] = this->vectorSet[i][0] + vec.vectorSet[i][0];
-	result.update();
-	return result;
-}
-
-template<typename T, int dim>
-Vector<T, dim> Vector<T, dim>::add(const T& k)const												// + k.
-{
-	Vector<T, dim> result;
-	int i;
-	for (i = 0; i < dim; ++i) result.vectorSet[i][0] = this->vectorSet[i][0] + k;
-	result.update();
-	return result;
-}
-
-template<typename T, int dim>
-Vector<T, dim> Vector<T, dim>::minus(const Vector<T, dim>& vec)const								// - vec.
-{
-	Vector<T, dim> result;
-	int i;
-	for (i = 0; i < dim; ++i) result.vectorSet[i][0] = this->vectorSet[i][0] - vec.vectorSet[i][0];
-	result.update();
-	return result;
-}
-
-template<typename T, int dim>
-Vector<T, dim> Vector<T, dim>::minusf(const T& k)const											// k - my.
-{
-	Vector<T, dim> result;
-	int i;
-	for (i = 0; i < dim; ++i) result.vectorSet[i][0] = k - this->vectorSet[i][0];
-	result.update();
-	return result;
-}
-
-template<typename T, int dim>
-Vector<T, dim> Vector<T, dim>::_multiple(const T& k)const											// .* k.
-{
-	Vector<T, dim> result;
-	int i;
-	for (i = 0; i < dim; ++i) result.vectorSet[i][0] = this->vectorSet[i][0] * k;
-	if (k >= 0)
-		result.length = result.length * k;
-	else
+	Vector<T, dim> result(this);
+	switch (type)
 	{
-		result.length = result.length * (-k);
-		for (i = 0; i < dim; ++i)
-			result.direction[i] = -result.direction[i];
+	case 0: result.vadd(vec); break;
+	case 1: result.vminus(vec); break;
+	case 2: result.v_multiple(vec); break;
+	case 3: result.vcross(vec); break;
+	default: cout << "Error Occurs: Arithmetic" << endl;
 	}
 	return result;
 }
 
 template<typename T, int dim>
-Vector<T, dim> Vector<T, dim>::_multiple(const Vector<T, dim>& vec)const							// .* vec.
+Vector<T, dim> Vector<T, dim>::arithmetic(const T& k, int type)const
 {
-	Vector<T, dim> result;
-	int i;
-	for (i = 0; i < dim; ++i) result.vectorSet[i][0] = this->vectorSet[i][0] * vec.vectorSet[i][0];
-	result.update();
+	Vector<T, dim> result(this);
+	switch (type)
+	{
+	case 0: result.vadd(k); break;
+	case 1: result.vminusf(k); break;
+	case 2: result.v_multiple(k); break;
+	default: cout << "Error Occurs: Arithmetic" << endl;
+	}
 	return result;
 }
 
 template<typename T, int dim>
-Vector<T, dim> Vector<T, dim>::cross(const Vector<T, dim>& vec)const							// cross vec.
+template<int colDim>
+uMatrix<T, dim, colDim> Vector<T, dim>::cross(const uMatrix<T, dim, colDim>& mat)const			// .* mat.
 {
-	// unfinished,
+	if (dim != 3) return mat;
+	int j;
+	uMatrix<T, dim, colDim> result;
+	for (j = 0; j < colDim; ++j)
+	{
+		result.vectorSet[0][j] = this->vectorSet[1][0] * mat.vectorSet[2][j] - this->vectorSet[2][0] * mat.vectorSet[1][j];
+		result.vectorSet[1][j] = this->vectorSet[2][0] * mat.vectorSet[0][j] - this->vectorSet[0][0] * mat.vectorSet[2][j];
+		result.vectorSet[2][j] = this->vectorSet[0][0] * mat.vectorSet[1][j] - this->vectorSet[1][0] * mat.vectorSet[0][j];
+	}
+	return result;
 }
 
 template<typename T, int dim>
@@ -386,8 +564,8 @@ uMatrix<T, dim, colDim> Vector<T, dim>::multiple(const tVector<T, colDim>& tvec)
 	uMatrix<T, dim, colDim> result;
 	int i, j;
 	for (i = 0; i < dim; ++i)
-		for(j = 0; j < colDim; ++j)
-			result.vectorSet[i][j] = this->vectorSet[i][0] * tvec.vectorSet[0][j];
+		for (j = 0; j < colDim; ++j)
+			result.vectorSet[i][j] = getElement(i) * tvec.getElement(j);
 	return result;
 }
 
@@ -399,7 +577,7 @@ uMatrix<T, dim, colDim> Vector<T, dim>::_multiple(const uMatrix<T, dim, colDim>&
 	int i, j;
 	for (i = 0; i < dim; ++i)
 		for (j = 0; j < colDim; ++j)
-			result.vectorSet[i][j] = this->vectorSet[i][0] * mat.vectorSet[i][j];
+			result.vectorSet[i][j] = getElement(i) * mat.vectorSet[i][j];
 	return result;
 }
 
@@ -412,65 +590,22 @@ Vector<T, rowDim> Vector<T, dim>::multipleb(const uMatrix<T, rowDim, dim>& mat)c
 	for (i = 0; i < rowDim; ++i)
 	{
 		for (j = 0; j < dim; ++j)
-			result.vectorSet[i][0] += mat.vectorSet[i][j] * this->vectorSet[j][0];
+			result.vectorSet[i][0] += mat.vectorSet[i][j] * getElement(j);
 	}
 	result.update();
 	return result;
 }
 
 template<typename T, int dim>
-T& Vector<T, dim>::toVal()
-{
-	return this->vectorSet[0][0];
-}
-
-template<typename T, int dim>
-T& Vector<T, dim>::getVal(int index)
+T Vector<T, dim>::getElement(int index)const
 {
 	return this->vectorSet[index][0];
 }
 
 template<typename T, int dim>
-T& Vector<T, dim>::dot(Vector<T, dim>& vec)
+void Vector<T, dim>::setElement(const T& data, int index)
 {
-	T ans = 0;
-	int i;
-	for (i = 0; i < dim; ++i)
-		ans = ans + this->vectorSet[i][0] * vec->vectorSet[i][0];
-	return ans;
-}
-
-template<typename T, int dim>
-T& Vector<T, dim>::project(Vector<T, dim>& vec)
-{
-	T ans = this->dot(vec);
-	if (vec->length > 0) ans = ans / vec->length;
-	return ans;
-}
-
-template<typename T, int dim>
-Vector<T, dim> Vector<T, dim>::projectVec(Vector<T, dim>& vec)
-{
-	Vector<T, dim> result(vec);
-	result.normalize(this->project(vec));
-	return result;
-}
-
-template<typename T, int dim>
-Vector<T, dim> Vector<T, dim>::extract(Vector<T, dim>& vec)
-{
-	Vector<T, dim> result(this);
-	result = result - this->projectVec(vec);
-	return result;
-}
-
-template<typename T, int dim>
-void Vector<T, dim>::normalize(T& scale)
-{
-	int i;
-	for (i = 0; i < dim; ++i)
-		this->vectorSet[i][0] = this->direction[i] * scale;
-	this->length = scale;
+	this->vectorSet[index][0] = data;
 }
 
 template<typename T, int dim>
@@ -480,7 +615,7 @@ tVector<T, dim> Vector<T, dim>::transpose()
 	int i;
 	for (i = 0; i < dim; ++i)
 	{
-		result.vectorSet[0][i] = this->vectorSet[i][0];
+		result.setElement(getElement(i), i);
 		result.direction[i] = this->direction[i];
 	}
 	result.length = this->length;
@@ -493,8 +628,8 @@ void Vector<T, dim>::operator=(const Vector<T, dim> vec)
 	int i;
 	for (i = 0; i < dim; ++i)
 	{
-		this->vectorSet[i][0] = vec.vectorSet[i][0];
-		this->direction[i] = vec.direction[i][0];
+		setElement(vec.getElement(i), i);
+		this->direction[i] = vec.direction[i];
 	}
 	this->length = vec.length;
 }
@@ -515,20 +650,18 @@ ofstream& operator<<(ofstream &s, Vector<T, dim>& vec)
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 template<int dim> using dtVector = tVector<double, dim>;
+template<typename T> using tVector2d = tVector<T, 2>;
+template<typename T> using tVector3d = tVector<T, 3>;
 using dtVector2d = tVector<double, 2>;
 using dtVector3d = tVector<double, 3>;
 
 template<typename T, int dim>
-class tVector :public _tVector<T, dim>, public _VectorAccessory<T, dim>
+class tVector :public _tVector<T, dim>, public VectorFrame<T, dim>
 {
 protected:
 	template<typename T, int dim> friend class Vector;
 	template<typename T, int dim> friend class tVector;
 	template<typename T, int mRows, int nCols> friend class uMatrix;
-
-	void zero();								// zero the vector.
-	void ones(int = 1);
-	void update();
 
 	template<int rowDim>
 	uMatrix<T, rowDim + 1, dim> graft(const uMatrix<T, rowDim, dim>&, bool = 0)const;       // graft mat from buttom.
@@ -536,15 +669,12 @@ protected:
 	template<int newDim>
 	tVector<T, dim + newDim> stitch(const tVector<T, newDim>&)const;                        // stitch mat from right.
 
-	tVector<T, dim> add(const tVector<T, dim>&)const;                               // + tvec.
-	tVector<T, dim> add(const T&)const;                                             // + k.
-	tVector<T, dim> minus(const tVector<T, dim>&)const;                             // - tvec.
-	tVector<T, dim> minusf(const T&)const;                                          // k - my.
-	tVector<T, dim> _multiple(const T&)const;                                       // .* k.
-	tVector<T, dim> _multiple(const tVector<T, dim>&)const;                         // .* tvec.
-	tVector<T, dim> cross(const tVector<T, dim>&)const;                             // cross tvec.
-	T multiple(const Vector<T, dim>&)const;                                         // * vec.
+	tVector<T, dim> arithmetic(const tVector<T, dim>&, int)const;
+	tVector<T, dim> arithmetic(const T&, int)const;
+	T multiple(const Vector<T, dim>&)const;
 
+	template<int rowDim>
+	uMatrix<T, rowDim, dim> cross(const uMatrix<T, rowDim, dim>&)const;
 	template<int rowDim>
 	uMatrix<T, rowDim, dim> _multiple(const uMatrix<T, rowDim, dim>&)const;         // .* mat.
 	template<int colDim>
@@ -560,16 +690,8 @@ public:
 		// unfinished. inform needed.
 		//cout << "- Destructor Vector." << endl;
 	};
-	T& toVal();                                       // convert to T if dimension == 1.
-	int getDim() { return dim; };                     // get dimension.
-	T& getVal(int);                                   // get the ith value of the vector.
-	T& getLen() { return this->calLen(); };           // get length of the vector.
-	T* getDir() { return this->calDir(); };           // get the direction of the vector.
-	T& dot(tVector<T, dim>&);                         // * target vec.
-	T& project(tVector<T, dim>&);                     // get the projection on the target vec.
-	tVector<T, dim> projectVec(tVector<T, dim>&);     // get the component parallel with the target vec.
-	tVector<T, dim> extract(tVector<T, dim>&);        // get the component orthogonal to the target vec.
-	void normalize(T& = 1);                           // normalize the vector under specific scale.
+	T getElement(int)const;
+	void setElement(const T&, int);
 	Vector<T, dim> transpose();                       // transpose.
 	void operator=(const tVector<T, dim>);            // = overload.
 	friend ofstream& operator<<<T, dim>(ofstream&, tVector<T, dim>&);     // << overload.
@@ -582,19 +704,22 @@ public:
 	template<int newDim>
 	friend tVector<T, dim + newDim> operator|(const tVector<T, dim>& my, const tVector<T, newDim>& tvec) { return my.stitch(tvec); };
 
-	friend tVector<T, dim> operator+(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.add(tvec); };
-	friend tVector<T, dim> operator+(const tVector<T, dim >& my, const T& k) { return my.add(k); };
-	friend tVector<T, dim> operator+(const T& k, const tVector<T, dim>& my) { return my.add(k); };
-	friend tVector<T, dim> operator-(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.minus(tvec); };
-	friend tVector<T, dim> operator-(const tVector<T, dim>& my, const T& k) { return my.add(-k); };
-	friend tVector<T, dim> operator-(const T& k, const tVector<T, dim>& my) { return my.minusf(k); };
+	friend tVector<T, dim> operator+(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.arithmetic(tvec, 0); };
+	friend tVector<T, dim> operator+(const tVector<T, dim >& my, const T& k) { return my.arithmetic(k, 0); };
+	friend tVector<T, dim> operator+(const T& k, const tVector<T, dim>& my) { return my.adarithmeticd(k, 0); };
+	friend tVector<T, dim> operator-(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.arithmetic(tvec, 1); };
+	friend tVector<T, dim> operator-(const tVector<T, dim>& my, const T& k) { return my.arithmetic(-k, 0); };
+	friend tVector<T, dim> operator-(const T& k, const tVector<T, dim>& my) { return my.arithmetic(k, 1); };
 
-	friend tVector<T, dim> operator*(const tVector<T, dim>& my, const T& k) { return my._multiple(k); }
-	friend tVector<T, dim> operator*(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my._multiple(tvec); }
-
+	friend tVector<T, dim> operator*(const tVector<T, dim>& my, const T& k) { return my.arithmetic(k, 2); }
+	friend tVector<T, dim> operator*(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.arithmetic(tvec, 2); }
+	friend tVector<T, dim> operator^(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.arithmetic(tvec, 3); }
 	friend T operator*(const tVector<T, dim>& my, const Vector<T, dim>& vec) { return my.multiple(vec); }
-	friend tVector<T, dim> operator^(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.cross(tvec); }
 
+	template<int rowDim>
+	friend uMatrix<T, rowDim, dim> operator^(const tVector<T, dim>& my, const uMatrix<T, rowDim, dim>& mat) { return my.cross(mat); }
+	template<int rowDim>
+	friend uMatrix<T, rowDim, dim> operator^(const uMatrix<T, rowDim, dim>& mat, const tVector<T, dim>& my) { return my.cross(mat); }
 	template<int rowDim>
 	friend uMatrix<T, rowDim, dim> operator*(const uMatrix<T, rowDim, dim>& mat, const tVector<T, dim>& my) { return my._multiple(mat); }
 	template<int colDim>
@@ -603,111 +728,36 @@ public:
 };
 
 template<typename T, int dim>
-tVector<T, dim>::tVector(int type, int num) : _tVector<T, dim>(), _VectorAccessory<T, dim>()
+tVector<T, dim>::tVector(int type, int num)
 {
-	if (type == 0) zero();
-	if (type == 1) ones(num);
-	if (type == 2)
-	{
-		zero();
-		if (num >= 0 && num < dim)
-		{
-			this->vectorSet[0][num] = 1;
-			this->direction[num] = 1;
-			this->length = 1;
-		}
-	}
-	if (type = 3) random<T, 1, dim>(this->vectorSet, num);
-}
+	this->default_init(type, num);
+	if (type == 3) random<T, 1, dim>(this->vectorSet, num);
+	this->update();
+};
 
 template<typename T, int dim>
 tVector<T, dim>::tVector(T& data)
 {
-	for (int i = 0; i < dim; i++)
-		this->vectorSet[0][i] = data;
-	update();
-}
+	this->data_init(data);
+};
 
 template<typename T, int dim>
 tVector<T, dim>::tVector(T* data)
 {
-	int i = 0;
-	bool iflag = 0, oflag = 0;		// iflag for insufficient; oflag for overflow.
-	while (i < dim && data + i)
-	{
-		this->vectorSet[0][i] = data[i];
-		++i;
-	}
-	if (i < dim)
-	{
-		iflag = 1;	// unfinished. warning needed.
-		while (i < dim) this->vectorSet[0][i++] = 0;
-	}
-	if (data + i) oflag = 1;	//unfinished. warning needed.
-	update();
-}
+	this->data_init(data);
+};
 
 template<typename T, int dim>
-tVector<T, dim>::tVector(const tVector<T, dim>& tvec)
+tVector<T, dim>::tVector(const tVector<T, dim>& vec)
 {
-	for (int i = 0; i < dim; i++)
-	{
-		this->vectorSet[0][i] = tvec.vectorSet[0][i];
-		this->direction[i] = tvec.direction[i];
-	}
-	this->length = tvec.length;
-}
+	this->copy_init(vec);
+};
 
 template<typename T, int dim>
-tVector<T, dim>::tVector(const tVector<T, dim>* tvec)
+tVector<T, dim>::tVector(const tVector<T, dim>* vec)
 {
-	for (int i = 0; i < dim; i++)
-	{
-		this->vectorSet[0][i] = tvec->vectorSet[0][i];
-		this->direction[i] = tvec->direction[i];
-	}
-	this->length = tvec->length;
-}
-
-template<typename T, int dim>
-void tVector<T, dim>::zero()
-{
-	for (int i = 0; i < dim; i++)
-	{
-		this->vectorSet[0][i] = 0;
-		this->direction[i] = 0;
-	}
-	this->length = 0;
-}
-
-template<typename T, int dim>
-void tVector<T, dim>::ones(int num)
-{
-	this->length = num * sqrt(dim);
-	T dirVal = 1 / this->length;
-	for (int i = 0; i < dim; i++)
-	{
-		this->vectorSet[0][i] = num;
-		this->direction[i] = dirVal;
-	}
-}
-
-template<typename T, int dim>
-void tVector<T, dim>::update()
-{
-	int i;
-	this->length = 0;
-	for (i = 0; i < dim; i++)
-		this->length = this->length + this->vectorSet[0][i] * this->vectorSet[0][i];
-	this->length = sqrt(this->length);
-
-	if (this->length == 0)
-		for (i = 0; i < dim; i++)
-			this->direction[i] = 0;
-	else
-		for (i = 0; i < dim; i++)
-			this->direction[i] = this->vectorSet[0][i] / this->length;
-}
+	this->copy_init(vec);
+};
 
 template<typename T, int dim>
 template<int rowDim>
@@ -759,76 +809,32 @@ tVector<T, dim + newDim> tVector<T, dim>::stitch(const tVector<T, newDim>& tvec)
 }
 
 template<typename T, int dim>
-tVector<T, dim> tVector<T, dim>::add(const tVector<T, dim>& tvec)const									// + vec.
+tVector<T, dim> tVector<T, dim>::arithmetic(const tVector<T, dim>& vec, int type)const
 {
-	tVector<T, dim> result;
-	int j;
-	for (j = 0; j < dim; ++j) result.vectorSet[0][j] = this->vectorSet[0][j] + tvec.vectorSet[0][j];
-	result.update();
-	return result;
-}
-
-template<typename T, int dim>
-tVector<T, dim> tVector<T, dim>::add(const T& k)const												// + k.
-{
-	tVector<T, dim> result;
-	int j;
-	for (j = 0; j < dim; ++j) result.vectorSet[0][j] = this->vectorSet[0][j] + k;
-	result.update();
-	return result;
-}
-
-template<typename T, int dim>
-tVector<T, dim> tVector<T, dim>::minus(const tVector<T, dim>& tvec)const								// - vec.
-{
-	tVector<T, dim> result;
-	int j;
-	for (j = 0; j < dim; ++j) result.vectorSet[0][j] = this->vectorSet[0][j] - tvec.vectorSet[0][j];
-	result.update();
-	return result;
-}
-
-template<typename T, int dim>
-tVector<T, dim> tVector<T, dim>::minusf(const T& k)const											// k - my.
-{
-	tVector<T, dim> result;
-	int j;
-	for (j = 0; j < dim; ++j) result.vectorSet[0][j] = k - this->vectorSet[0][j];
-	result.update();
-	return result;
-}
-
-template<typename T, int dim>
-tVector<T, dim> tVector<T, dim>::_multiple(const T& k)const											// .* k.
-{
-	tVector<T, dim> result;
-	int j;
-	for (j = 0; j < dim; ++j) result.vectorSet[0][j] = this->vectorSet[0][j] * k;
-	if (k >= 0)
-		result.length = result.length * k;
-	else
+	tVector<T, dim> result(this);
+	switch (type)
 	{
-		result.length = result.length * (-k);
-		for (j = 0; j < dim; ++j)
-			result.direction[j] = -result.direction[j];
+	case 0: result.add(vec); break;
+	case 1: result.minus(vec); break;
+	case 2: result._multiple(vec); break;
+	case 3: result.cross(vec); break;
+	default: cout << "Error Occurs: Arithmetic" << endl;
 	}
 	return result;
 }
 
 template<typename T, int dim>
-tVector<T, dim> tVector<T, dim>::_multiple(const tVector<T, dim>& tvec)const							// .* vec.
+tVector<T, dim> tVector<T, dim>::arithmetic(const T& k, int type)const
 {
-	tVector<T, dim> result;
-	int j;
-	for (j = 0; j < dim; ++j) result.vectorSet[0][j] = this->vectorSet[0][j] * tvec.vectorSet[0][j];
-	result.update();
+	tVector<T, dim> result(this);
+	switch (type)
+	{
+	case 0: result.add(k); break;
+	case 1: result.minusf(k); break;
+	case 2: result._multiple(k); break;
+	default: cout << "Error Occurs: Arithmetic" << endl;
+	}
 	return result;
-}
-
-template<typename T, int dim>
-tVector<T, dim> tVector<T, dim>::cross(const tVector<T, dim>& tvec)const								// cross vec.
-{
-	// unfinished. 2001202109
 }
 
 template<typename T, int dim>
@@ -837,6 +843,22 @@ T tVector<T, dim>::multiple(const Vector<T, dim>& vec)const												// tvec *
 	T ans = 0;
 	for (int j = 0; j < dim; ++j) ans = ans + this->vectorSet[0][j] * vec.vectorSet[j][0];
 	return ans;
+}
+
+template<typename T, int dim>
+template<int rowDim>
+uMatrix<T, rowDim, dim> tVector<T, dim>::cross(const uMatrix<T, rowDim, dim>& mat)const			// .* mat.
+{	// error message needed. unfinished. 2002011756
+	if (dim != 3) return mat;
+	int i;
+	uMatrix<T, rowDim, dim> result;
+	for (i = 0; i < rowDim; ++i)
+	{
+		result.vectorSet[i][0] = this->vectorSet[0][1] * mat.vectorSet[i][2] - this->vectorSet[0][2] * mat.vectorSet[i][1];
+		result.vectorSet[i][1] = this->vectorSet[0][2] * mat.vectorSet[i][0] - this->vectorSet[0][0] * mat.vectorSet[i][2];
+		result.vectorSet[i][2] = this->vectorSet[0][0] * mat.vectorSet[i][1] - this->vectorSet[0][1] * mat.vectorSet[i][0];
+	}
+	return result;
 }
 
 template<typename T, int dim>
@@ -867,58 +889,15 @@ tVector<T, colDim> tVector<T, dim>::multiple(const uMatrix<T, dim, colDim>& mat)
 }
 
 template<typename T, int dim>
-T& tVector<T, dim>::toVal()
-{
-	return this->vectorSet[0][0];	// not decided. 2001272203
-}
-
-template<typename T, int dim>
-T& tVector<T, dim>::getVal(int index)
+T tVector<T, dim>::getElement(int index)const
 {
 	return this->vectorSet[0][index];
 }
 
 template<typename T, int dim>
-T& tVector<T, dim>::dot(tVector<T, dim>& vec)
+void tVector<T, dim>::setElement(const T& data, int index)
 {
-	T ans = 0;
-	int i;
-	for (i = 0; i < dim; ++i)
-		ans = ans + this->vectorSet[0][i] * vec->vectorSet[0][i];
-	return ans;
-}
-
-template<typename T, int dim>
-T& tVector<T, dim>::project(tVector<T, dim>& vec)
-{
-	T ans = this->dot(vec);
-	if (vec->length > 0) ans = ans / vec->length;
-	return ans;
-}
-
-template<typename T, int dim>
-tVector<T, dim> tVector<T, dim>::projectVec(tVector<T, dim>& vec)
-{
-	tVector<T, dim> result(vec);
-	result.normalize(this->project(vec));
-	return result;
-}
-
-template<typename T, int dim>
-tVector<T, dim> tVector<T, dim>::extract(tVector<T, dim>& vec)
-{
-	tVector<T, dim> result(this);
-	result = result - this->projectVec(vec);
-	return result;
-}
-
-template<typename T, int dim>
-void tVector<T, dim>::normalize(T& scale)
-{
-	int i;
-	for (i = 0; i < dim; ++i)
-		this->vectorSet[0][i] = this->direction[i] * scale;
-	this->length = scale;
+	this->vectorSet[0][index] = data;
 }
 
 template<typename T, int dim>
@@ -958,6 +937,5 @@ ofstream& operator<<(ofstream& s, tVector<T, dim>& tvec)
 	s << endl;
 	return s;
 }
-
 
 #endif

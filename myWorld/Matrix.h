@@ -169,8 +169,8 @@ protected:
 	void equalize();                                        // equalize the elements.
 	void calRank();                                         // calculate the rank of the matrix. no change to matrix.
 	void setElement(T&, int, int);                          // never used.								~rank
-	void setRow(tVector<T, nCols>, int = 0);               //											~rank
-	void setColumn(Vector<T, mRows>, int = 0);             //											~rank
+	void setRow(tVector<T, nCols>, int = 0);                //											~rank
+	void setColumn(Vector<T, mRows>, int = 0);              //											~rank
 	void normRow(int);                                      // Normalize the row to the first element.
 	void normCol(int);                                      // Normalize the column to the first element.
 
@@ -189,9 +189,9 @@ protected:
 	uMatrix<T, mRows + kRows, nCols> graft(const uMatrix<T, kRows, nCols>&)const;           // graft mat from buttom.
 
 	uMatrix<T, mRows, nCols> add(const uMatrix<T, mRows, nCols>&)const;                     // + mat.
-	uMatrix<T, mRows, nCols> add(const T&)const;                                            // + k.
+	uMatrix<T, mRows, nCols> add(const T&)const;                                            // + kI.
 	uMatrix<T, mRows, nCols> minus(const uMatrix<T, mRows, nCols>&)const;                   // - mat.
-	uMatrix<T, mRows, nCols> minusf(const T&)const;                                         // k - my.
+	uMatrix<T, mRows, nCols> minusf(const T&)const;                                         // kI - my.
 	uMatrix<T, mRows, nCols> _multiple(const T&)const;                                      // .* k.
 	_Vector<T, mRows> multiple(const _Vector<T, nCols>&)const;                              // * vec.
 	uMatrix<T, mRows, nCols> _multiple(const uMatrix<T, mRows, nCols>&)const;               // .* mat.
@@ -205,14 +205,18 @@ public:
 	uMatrix(const uMatrix<T, mRows, nCols>&);                                               // copy construxctor.
 	uMatrix(const uMatrix<T, mRows, nCols>*);                                               // copy construxctor.
 	~uMatrix() {};                                                                          // destructor.
-	T& getElement(int = 0, int = 0);                                                        // get the element of the matrix.
+	virtual T getElement(int = 0)const;                                                     // get the element of the matrix.
+	T getElement(int = 0, int = 0)const;                                                    // get the element of the matrix.
 	int getRank();                                                                          // get the rank of the matrix. no change to rank.
-	tVector<T, nCols> getRow(int = 0);                                                     // get ith row.
-	Vector<T, mRows> getColumn(int = 0);                                                   // get jth column.
+	bool isZero();                                                                          // whether it is all zeros.
+	bool isIdentity();                                                                      // whether it is identity.
+	tVector<T, nCols> getRow(int = 0);                                                      // get ith row.
+	Vector<T, mRows> getColumn(int = 0);                                                    // get jth column.
 	uMatrix<T, nCols, mRows> transpose();                                                   // get the transpose of the matrix.
 	uMatrix<T, mRows + nCols, mRows + nCols> diagnolization();                              // diagonalize the . update the rank.
 	void operator=(const uMatrix<T, mRows, nCols>&);                                        // =  overload. rank already set.
 	friend ostream& operator<<<T, mRows, nCols>(ostream& s, uMatrix<T, mRows, nCols>&);     // << overload.
+//	friend uMatrix<T, mRows, mRows> rotator(const dVector<mRows>&);
 
 	template<typename U> operator uMatrix<U, mRows, nCols>();                               // convert to uMatrix<U>.
 	template<typename U> operator Vector<U, mRows>();                                       // convert to uMatrix<U>.
@@ -310,7 +314,7 @@ void uMatrix<T, mRows, nCols>::mergeZero()
 	for (i = 0; i < mRows; ++i)
 		for (j = 0; j < nCols; ++j)
 		{
-			if (abs(vectorSet[i][j] / meanVal) < error)
+			if (infinitesimal(vectorSet[i][j] / meanVal))
 				vectorSet[i][j] = 0;
 		}
 	// only used in Gaussian Elimination. no change to the rank.
@@ -476,7 +480,7 @@ uMatrix<T, mRows, mRows> uMatrix<T, mRows, nCols>::rowElimination(int task)			//
 				max_index = i;
 			}
 		}
-		if (abs(cur_max) < error) cur_max = 0;
+		if (infinitesimal(cur_max)) cur_max = 0;
 		if (max_index >= 0 && cur_max != 0 && empty[max_index] == 0)
 		{
 			//cout << "col = " << j << ",    max = " << cur_max << ",    index = " << max_index << endl;
@@ -537,7 +541,7 @@ uMatrix<T, nCols, nCols> uMatrix<T, mRows, nCols>::colElimination(int task)			//
 				max_index = j;
 			}
 		}
-		if (abs(cur_max) < error) cur_max = 0;
+		if (infinitesimal(cur_max)) cur_max = 0;
 		if (max_index >= 0 && cur_max != 0 && empty[max_index] == 0)
 		{
 			//cout << "row = " << i << ",    max = " << cur_max << ",    index = " << max_index << endl;
@@ -616,10 +620,9 @@ template<typename T, int mRows, int nCols>
 uMatrix<T, mRows, nCols> uMatrix<T, mRows, nCols>::add(const T& k)const
 {
 	uMatrix<T, mRows, nCols> result(this);
-	int i, j;
-	for (i = 0; i < mRows; ++i)
-		for (j = 0; j < nCols; ++j)
-			result.vectorSet[i][j] = result.vectorSet[i][j] + k;
+	int i, dim = minDim(mRows, nCols);
+	for (i = 0; i < dim; ++i)
+		result.vectorSet[i][i] = result.vectorSet[i][i] + k;
 	result.mergeZero();
 	return result;
 }
@@ -640,10 +643,9 @@ template<typename T, int mRows, int nCols>
 uMatrix<T, mRows, nCols> uMatrix<T, mRows, nCols>::minusf(const T& k)const
 {
 	uMatrix<T, mRows, nCols> result(this);
-	int i, j;
-	for (i = 0; i < mRows; ++i)
-		for (j = 0; j < nCols; ++j)
-			result.vectorSet[i][j] = k - result.vectorSet[i][j];
+	int i, dim = minDim(mRows, nCols);
+	for (i = 0; i < dim; ++i)
+		result.vectorSet[i][i] = k - result.vectorSet[i][i];
 	result.mergeZero();
 	return result;
 }
@@ -701,7 +703,14 @@ uMatrix<T, mRows, pCols> uMatrix<T, mRows, nCols>::multiple(const uMatrix<T, nCo
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////	Public Operations.		/////////////////////	public.
 template<typename T, int mRows, int nCols>
-T& uMatrix<T, mRows, nCols>::getElement(int rindex, int cindex)							// get element.
+T uMatrix<T, mRows, nCols>::getElement(int index)const						                // get element.
+{
+	int rindex = index % mRows, cindex = index / mRows;
+	return vectorSet[rindex][cindex];
+}
+
+template<typename T, int mRows, int nCols>
+T uMatrix<T, mRows, nCols>::getElement(int rindex, int cindex)const							// get element.
 {
 	return vectorSet[rindex][cindex];
 }
@@ -711,6 +720,31 @@ int uMatrix<T, mRows, nCols>::getRank()													// get rank.
 {
 	calRank();
 	return rank;
+}
+
+template<typename T, int mRows, int nCols>
+bool uMatrix<T, mRows, nCols>::isZero()													// get rank.
+{
+	int i, j;
+	for (i = 0; i < mRows; ++i)
+		for (j = 0; j < nCols; ++j)
+			if (abs(vectorSet[i][j]) > Numerical_Error)
+				return 0;
+	return 1;
+}
+
+template<typename T, int mRows, int nCols>
+bool uMatrix<T, mRows, nCols>::isIdentity()													// get rank.
+{
+	if (mRows != nCols) return 0;
+	int i, j;
+	for (i = 0; i < mRows; ++i)
+		for (j = 0; j < nCols; ++j)
+		{
+			if (i != j && abs(vectorSet[i][j]) > Numerical_Error) return 0;
+			if (i == j && abs(vectorSet[i][j] - 1) > Numerical_Error) return 0;
+		}
+	return 1;
 }
 
 template<typename T, int mRows, int nCols>
@@ -785,6 +819,20 @@ ostream& operator<<(ostream& s, uMatrix<T, mRows, nCols>& mat)							// << overl
 	}
 	return s;
 }
+
+//template<typename T, int mRows, int nCols>
+//uMatrix<T, mRows, mRows> rotator(const dVector<mRows>& torque)
+//{
+//	T angle = torque.getLen();
+//	dVector<mRows> axis(torque);
+//	uMatrix<T, mRows, mRows> Ea, Ca;
+//	axis.normalize();
+//	Ea = axis * axis.transpose();
+//	//Ca.vectorSet[0][1] = -axis.
+//	// 2002010140
+//	return Ea;
+//}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////	Format Conversion.		/////////////////////	public/
 
@@ -1055,8 +1103,8 @@ template<typename T, int dim>
 class sMatrix;
 template<typename T>		using sMatrix2d = sMatrix<T, 2>;
 template<typename T>		using sMatrix3d = sMatrix<T, 3>;
-using dMatrix3d = sMatrix<double, 3>;
-using dMatrix4d = sMatrix<double, 4>;
+using dsMatrix3d = sMatrix<double, 3>;
+using dsMatrix4d = sMatrix<double, 4>;
 
 template<typename T, int dim>
 class sMatrix :public eMatrix<T, dim, dim>
