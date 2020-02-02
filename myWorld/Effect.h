@@ -52,17 +52,25 @@ public:
 
 class Motion :public Effect
 {
+	bool is_balanced, is_origin;
 	dVector<Dimension> translate;
 	dVector<Dimension> axis;
 	uMatrix<double, Dimension, Dimension> rotMatrix;
+protected:
+	void checkBalanced();
+	void checkOrigin();
+	void update();
 public:
-	Motion() :Effect() {};
-	Motion(Entity* tar) :Effect(tar) {};
+	Motion();
+	Motion(Entity*);
+	Motion(Motion&);
 	~Motion() {};
 	void setDrift(const dVector<Dimension>&);
 	void setRot(const dVector<Dimension>&);
 	void addDrift(const dVector<Dimension>&);
 	void addRot(const dVector<Dimension>&);
+	dVector<Dimension> deviate(const dVector<Dimension>&);
+	LnBase<Dimension> deflect(const LnBase<Dimension>&);
 	void function();
 	void print();
 };

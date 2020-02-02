@@ -20,10 +20,12 @@ using namespace std;
 	Description:
 		This file claims and defines template class Vector and tVector for any type of statistic data and any dimension.
 
-	Abbreviations:
-		dVector<dim>	=	Vector<double, dim>
-		dVector2d		=	Vector<double, 2>
-		dVector3d		=	Vector<double, 3>
+	Structure:
+		_VectorAccessory<T, dim>
+		1	VectorFrame<T, dim>
+		1	2	Vector<T, dim>
+		1	2	tVector<T, dim>
+		LnBase<dim>
 
 	///////////////////////////////////////////////////////////////
 
@@ -87,6 +89,7 @@ public:
 	};
 	virtual T getElement(int)const;                            // get the ith element
 	virtual void setElement(const T&, int) {  };               // set the ith element
+	bool isOrigin();
 	T getLen()const { return this->length; };
 	T* getDir()const { return this->direction; };
 	int getDim() { return dim; };                              // get dimension.
@@ -279,6 +282,30 @@ void VectorFrame<T, dim>::vcross(const VectorFrame<T, dim>& vec)							// cross 
 	for (int i = 0; i < 3; ++i) setElement(cross[i], i);
 }
 
+
+template<typename T, int dim>
+T VectorFrame<T, dim>::getElement(int index)const
+{
+	return 0;
+}
+
+template<typename T, int dim>
+bool VectorFrame<T, dim>::isOrigin()
+{
+	for (int i = 0; i < dim; ++i)
+		if (!infinitesimal(getElement(i))) return 0;
+	return 1;
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::normalize(const T& scale)
+{
+	int i;
+	for (i = 0; i < dim; ++i)
+		setElement(this->direction[i] * scale, i);
+	this->length = scale;
+}
+
 template<typename T, int dim>
 T& VectorFrame<T, dim>::dot(VectorFrame<T, dim>& vec)
 {
@@ -313,22 +340,6 @@ VType VectorFrame<T, dim>::extract(VType& vec)
 	VType result(this);
 	result = result - this->projectVec(vec);
 	return result;
-}
-
-template<typename T, int dim>
-T VectorFrame<T, dim>::getElement(int index)const
-{
-	T ans = 0;
-	return ans;
-}
-
-template<typename T, int dim>
-void VectorFrame<T, dim>::normalize(const T& scale)
-{
-	int i;
-	for (i = 0; i < dim; ++i)
-		setElement(this->direction[i] * scale, i);
-	this->length = scale;
 }
 
 template<typename T, int dim>
@@ -936,5 +947,156 @@ ofstream& operator<<(ofstream& s, tVector<T, dim>& tvec)
 	s << endl;
 	return s;
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////    class LnBse
+
+template<int dim>
+class LnBase
+{
+	bool is_identity;
+	dMatrix<dim, dim> baseMatrix;
+protected:
+	bool checkBase();
+	void checkIdentity();
+	void SchmitOrth();
+	void update();
+public:
+	LnBase(int = 0);
+	LnBase(const dMatrix<dim, dim>&);
+	LnBase(const LnBase<dim>&);
+	~LnBase() {};
+	bool isIdentity();
+	void setMatrix(const dMatrix<dim, dim>&);
+	dVector<dim> revert(const dVector<dim>&);
+	dVector<dim> project(const dVector<dim>&);
+	void rotate(const dVector<dim>&);
+	void rotate(const dMatrix<dim, dim>&);
+	void printBase();
+	void operator=(const LnBase<dim>&);
+};
+
+template<int dim>
+LnBase<dim>::LnBase(int type)
+{
+	if (type == 0) baseMatrix = identity(dim);     // default: identity
+	if (type == 1)
+	{
+		// random baseMatrix;
+		// unfinished. 2001301424
+	}
+	update();
+}
+
+template<int dim>
+LnBase<dim>::LnBase(const dMatrix<dim, dim>& mat)
+{
+	setMatrix(mat);
+}
+
+template<int dim>
+LnBase<dim>::LnBase(const LnBase<dim>& base)
+{
+	setMatrix(base.baseMatrix);
+}
+
+template<int dim>
+bool LnBase<dim>::checkBase()
+{
+	dMatrix<dim, dim> checkMatrix = baseMatrix.transpose() * baseMatrix;
+	return checkMatrix.isIdentity();
+}
+
+template<int dim>
+void LnBase<dim>::checkIdentity()
+{
+	is_identity = baseMatrix.isIdentity();
+}
+
+template<int dim>
+void LnBase<dim>::SchmitOrth()
+{
+	if (checkBase()) return;
+	int i, j;
+	double projection;
+	dVector<dim> cur_col;
+	dVector<dim> remove_col;
+	for (i = 0; i < dim; ++i)
+	{
+		cur_col = baseMatrix.getColumn(i);
+		for (j = 0; j < i; ++j)
+		{
+			remove_col = baseMatrix.getColmn(j);
+			cur_col = cur_col.extract(remove_col);
+		}
+		cur_col.normalize();
+		baseMatrix.setColumn(cur_col, i);
+	}
+}
+
+template<int dim>
+void LnBase<dim>::update()
+{
+	SchmitOrth();
+	checkIdentity();
+}
+
+template<int dim>
+bool LnBase<dim>::isIdentity()
+{
+	return is_identity;
+}
+
+template<int dim>
+void LnBase<dim>::setMatrix(const dMatrix<dim, dim>& mat)
+{
+	baseMatrix = mat;
+	update();
+}
+
+template<int dim>
+dVector<dim> LnBase<dim>::revert(const dVector<dim>& rvec)
+{
+	if (is_identity) return rvec;
+	return baseMatrix * rvec;
+}
+
+template<int dim>
+dVector<dim> LnBase<dim>::project(const dVector<dim>& vec)
+{
+	if (is_identity) return vec;
+	return baseMatrix.transpose() * vec;
+}
+
+template<int dim>
+void LnBase<dim>::rotate(const dVector<dim>& torque)
+{
+	uMatrix<double, dim, dim> R = rotator<double, dim>(torque);
+	baseMatrix = R * baseMatrix;
+	update();
+}
+
+template<int dim>
+void LnBase<dim>::rotate(const dMatrix<dim, dim>& rotMatrix)
+{
+	baseMatrix = rotMatrix * baseMatrix;
+	update();
+}
+
+template<int dim>
+void LnBase<dim>::printBase()
+{
+	cout << baseMatrix << endl;
+}
+
+template<int dim>
+void LnBase<dim>::operator=(const LnBase<dim>& base)
+{
+	baseMatrix = base.baseMatrix;
+	is_identity = base.is_identity;
+}
+
 
 #endif

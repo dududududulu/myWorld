@@ -8,6 +8,7 @@
 #include "settings.h"
 #include "Matrix.h"
 #include "VectorSpace.h"
+#include "Effect.h"
 using namespace std;
 
 /*
@@ -16,7 +17,7 @@ using namespace std;
 
 	File Name:              Reference.h
 	Date of Creation:       20200130
-	Latest Revise:          20200130
+	Latest Revise:          20200202
 
 	Description:
 		This file claims and defines linear space Base and Ref classes.
@@ -29,84 +30,6 @@ using namespace std;
 	///////////////////////////////////////////////////////////////
 
 */
-
-template<int dim>
-class LnBase
-{
-	dMatrix<dim, dim> baseMatrix;
-protected:
-	void SchmitOrth();
-public:
-	LnBase(int = 0);
-	~LnBase() {};
-	bool isIdentity();
-	dVector<dim> project(dVector<dim>&);
-	void rotate(const dVector<dim>&);
-	void rotate(const uMatrix<double, dim, dim>&);
-	void printBase();
-};
-
-template<int dim>
-LnBase<dim>::LnBase(int type)
-{
-	if (type == 0) baseMatrix = identity(dim);     // default: identity
-	if (type == 1)
-	{
-		// random baseMatrix;
-		// unfinished. 2001301424
-	}
-}
-
-template<int dim>
-void LnBase<dim>::SchmitOrth()
-{
-	int i, j;
-	double projection;
-	dVector<dim> cur_col;
-	dVector<dim> remove_col;
-	for (i = 0; i < dim; ++i)
-	{
-		cur_col = baseMatrix.getColumn(i);
-		for (j = 0; j < i; ++j)
-		{
-			remove_col = baseMatrix.getColmn(j);
-			cur_col = cur_col.extract(remove_col);
-		}
-		cur_col.normalize();
-		baseMatrix.setColumn(cur_col, i);
-	}
-}
-
-template<int dim>
-bool LnBase<dim>::isIdentity()
-{
-	return baseMatrix.isIdentity();
-}
-
-template<int dim>
-dVector<dim> LnBase<dim>::project(dVector<dim>& vec)
-{
-	return baseMatrix.transpose() * vec;
-}
-
-template<int dim>
-void LnBase<dim>::rotate(const dVector<dim>& torque)
-{
-	uMatrix<double, dim, dim> R = rotator<double, dim>(torque);
-	baseMatrix = R * baseMatrix;
-}
-
-template<int dim>
-void LnBase<dim>::rotate(const uMatrix<double, dim, dim>& rotMatrix)
-{
-	baseMatrix = rotMatrix * baseMatrix;
-}
-
-template<int dim>
-void LnBase<dim>::printBase()
-{
-	cout << baseMatrix << endl;
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -121,25 +44,86 @@ class Ref
 	LnBase<dim> base;           // default: identity
 public:
 	Ref() {};
-	Ref(dVector<dim>&);
-	Ref(dVector<dim>&, dMatrix<dim, dim>);
+	Ref(const dVector<dim>&);
+	Ref(const dVector<dim>&, const dMatrix<dim, dim>&);
 	~Ref() {};
 	bool isBalanced();
 	bool isAbsolute();
-	dVector<dim> revert(dVector<dim>&);                       // revert the vector in this to absolute reference
-	dVector<dim> project(dVector<dim>&);                      // project the absolute vector to this
-	dVector<dim> project(dVector<dim>&, Ref<dim>&);           // project the Ref vector to this
-
+	void setOrigin(const dVector<dim>&);
+	void setBase(const dMatrix<dim, dim>&);
+	dVector<dim> revert(const dVector<dim>&);                       // revert the vector in this to absolute reference
+	dVector<dim> project(const dVector<dim>&);                      // project the absolute vector to this
+	dVector<dim> project(const dVector<dim>&, const Ref<dim>&);     // project the Ref vector to this
+	void movement(const Motion&);
 };
 
 template<int dim>
-Ref<dim>::Ref(dVector<dim>& orig)
+Ref<dim>::Ref(const dVector<dim>& orig)
+{
+	setOrigin(orig);
+}
+
+template<int dim>
+Ref<dim>::Ref(const dVector<dim>& orig, const dMatrix<dim, dim>& mat)
+{
+	setOrigin(orig);
+	setBase(mat);
+}
+
+template<int dim>
+bool Ref<dim>::isBalanced()
+{
+	return base.isIdentity();
+}
+
+template<int dim>
+bool Ref<dim>::isAbsolute()
+{
+	return (base.isIdentity() & origin.isOrigin());
+}
+
+template<int dim>
+void Ref<dim>::setOrigin(const dVector<dim>& orig)
 {
 	origin = orig;
 }
 
+template<int dim>
+void Ref<dim>::setBase(const dMatrix<dim, dim>& mat)
+{
+	base.setMatrix(mat);
+}
 
+template<int dim>
+dVector<dim> Ref<dim>::revert(const dVector<dim>& rvec)                       // revert the vector in this to absolute reference
+{
+	dVector<dim> result;
+	result = base.revert(rvec) + origin;
+	return result;
+}
 
+template<int dim>
+dVector<dim> Ref<dim>::project(const dVector<dim>& avec)                      // project the absolute vector to this
+{
+	dVector<dim> result;
+	result = base.project(avec - origin);
+	return result;
+}
+
+template<int dim>
+dVector<dim> Ref<dim>::project(const dVector<dim>& rvec, const Ref<dim>& ref)           // project the Ref vector to this
+{
+	dVector<dim> result;
+	result = project(ref.revert(rvec));
+	return result;
+}
+
+template<int dim>
+void Ref<dim>::movement(const Motion& motion)
+{
+	origin = motion.deviate(origin);
+	base = motion.deflect(base);
+}
 
 
 #endif

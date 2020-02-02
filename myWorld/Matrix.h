@@ -975,7 +975,7 @@ class eMatrix :public uMatrix<T, mRows, nCols>
 protected:
 	int inv_type = -1;			// type of inv_matrix: -1 -> unclear. 
 								// for square matrices:	0 -> inverse; 1 -> singular.
-								// for rectangle matrices: 2 -> pseudo. 3 -> singular.
+                                // for rectangle matrices: 2 -> pseudo. 3 -> singular.
 	uMatrix<T, nCols, mRows> inv_matrix;
 protected:
 	T squareInv();
@@ -1204,7 +1204,7 @@ template<typename T, int dim>
 uMatrix<T, dim, dim> rotator(const Vector<double, dim>& torque)
 {
 	int i, j;
-	T angle = torque.getLen();
+	T angle = torque.getLen() * TimeElapse;
 	uMatrix<T, dim, dim> Ea, Ca, R;
 	Ea = torque * torque.transpose();
 	Ca.setElement(-torque.getElement(2), 0, 1); Ca.setElement(torque.getElement(1), 0, 2);
