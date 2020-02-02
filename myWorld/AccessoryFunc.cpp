@@ -18,3 +18,8 @@ bool infinitesimal(double data)
 	return 0;
 }
 
+double material_density(int material)
+{
+	return 1;
+	// unfinished. 2002021540
+}

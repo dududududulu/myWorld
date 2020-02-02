@@ -32,12 +32,14 @@ using namespace std;
 
 class Status
 {
+public:
 	Motion motion;
 	Shaping shaping;
 	Filter filter;
 public:
 	Status() {};
 	~Status() {};
+
 };
 
 

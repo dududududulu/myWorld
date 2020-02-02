@@ -31,15 +31,15 @@ using namespace std;
 */
 
 /* Public functions of class CLine */
-CLine::CLine() :CGeometry()
-{
-	length = -1;
-}
-
 CLine::CLine(double len) : CGeometry()
 {
 	if (len > 0) length = len;
 	else length = -1;
+}
+
+void CLine::resize(double len, double ash1, double ash2)
+{
+	length = len;
 }
 
 void CLine::scaling(double factor)
@@ -71,20 +71,13 @@ double CShape::getArea()
 	return area;
 }
 
-/* Public functions of class CCircle */
-CCircle::CCircle() :CShape()
-{
-	radius = 1;		// unit circle.
-	calPerim();
-	calArea();
-}
 
+/* Public functions of class CCircle */
 CCircle::CCircle(double r)
 {
 	if (r > 0) radius = r;
 	else radius = 1;
-	calPerim();
-	calArea();
+	this->update();
 }
 
 void CCircle::calPerim()
@@ -95,6 +88,12 @@ void CCircle::calPerim()
 void CCircle::calArea()
 {
 	this->area = PI * radius * radius;
+}
+
+void CCircle::resize(double rad, double ash1, double ash2)
+{
+	radius = rad;
+	this->update();
 }
 
 void CCircle::scaling(double factor)
@@ -114,20 +113,13 @@ void CCircle::print()
 	cout << endl;
 }
 
-/* Public functions of class CSquare */
-CSquare::CSquare() :CShape()
-{
-	side = 2;		// unit square.
-	calPerim();
-	calArea();
-}
 
+/* Public functions of class CSquare */
 CSquare::CSquare(double len) : CShape()
 {
 	if (len > 0) side = len;
-	else side = 2;
-	calPerim();
-	calArea();
+	else side = 1;
+	this->update();
 }
 
 void CSquare::calPerim()
@@ -138,6 +130,12 @@ void CSquare::calPerim()
 void CSquare::calArea()
 {
 	this->area = side * side;
+}
+
+void CSquare::resize(double len, double ash1, double ash2)
+{
+	side = len;
+	this->update();
 }
 
 void CSquare::scaling(double factor)
@@ -157,22 +155,14 @@ void CSquare::print()
 	cout << endl;
 }
 
-/* Public functions of class CRectangle */
-CRectangle::CRectangle() :CShape()
-{
-	xside = 2;		// unit square.
-	yside = 2;
-	calPerim();
-	calArea();
-}
 
+/* Public functions of class CRectangle */
 CRectangle::CRectangle(double len) : CShape()
 {
 	// unprotected. 2001292308
 	xside = len;
 	yside = len;
-	calPerim();
-	calArea();
+	this->update();
 }
 
 CRectangle::CRectangle(double xlen, double ylen) : CShape()
@@ -180,8 +170,7 @@ CRectangle::CRectangle(double xlen, double ylen) : CShape()
 	// unprotected. 2001292308
 	xside = xlen;
 	yside = ylen;
-	calPerim();
-	calArea();
+	this->update();
 }
 
 void CRectangle::calPerim()
@@ -192,6 +181,13 @@ void CRectangle::calPerim()
 void CRectangle::calArea()
 {
 	this->area = xside * yside;
+}
+
+void CRectangle::resize(double xlen, double ylen, double ash2)
+{
+	xside = xlen;
+	yside = ylen;
+	this->update();
 }
 
 void CRectangle::scaling(double factor)
@@ -233,20 +229,13 @@ double CSolid::getVolume()
 	return volume;
 }
 
-/* Public functions of class CGlobe */
-CGlobe::CGlobe() :CSolid()
-{
-	radius = 1;		// unit globe.
-	calSurface();
-	calVolume();
-}
 
+/* Public functions of class CGlobe */
 CGlobe::CGlobe(double r) :CSolid()
 {
 	if (r > 0) radius = r;
 	else radius = 1;
-	calSurface();
-	calVolume();
+	this->update();
 }
 
 void CGlobe::calSurface()
@@ -257,6 +246,12 @@ void CGlobe::calSurface()
 void CGlobe::calVolume()
 {
 	this->volume = 4 * PI * radius * radius * radius / 3;
+}
+
+void CGlobe::resize(double rad, double ash1, double ash2)
+{
+	radius = rad;
+	this->update();
 }
 
 void CGlobe::scaling(double factor)
@@ -276,20 +271,13 @@ void CGlobe::print()
 	cout << endl;
 }
 
-/* Public functions of class CCube */
-CCube::CCube() :CSolid()
-{
-	edge = 1;		// unit globe.
-	calSurface();
-	calVolume();
-}
 
+/* Public functions of class CCube */
 CCube::CCube(double len) :CSolid()
 {
 	if (len > 0) edge = len;
 	else edge = 1;
-	calSurface();
-	calVolume();
+	this->update();
 }
 
 void CCube::calSurface()
@@ -300,6 +288,12 @@ void CCube::calSurface()
 void CCube::calVolume()
 {
 	this->volume = edge * edge * edge;
+}
+
+void CCube::resize(double len, double ash1, double ash2)
+{
+	edge = len;
+	this->update();
 }
 
 void CCube::scaling(double factor)
@@ -320,23 +314,13 @@ void CCube::print()
 }
 
 /* Public functions of class CCuboid */
-CCuboid::CCuboid() :CSolid()
-{
-	xedge = 1;		// unit globe.
-	yedge = 1;
-	zedge = 1;
-	calSurface();
-	calVolume();
-}
-
 CCuboid::CCuboid(double len) :CSolid()
 {
 	// unprotected. 2001292319
 	xedge = len;
 	yedge = len;
 	zedge = len;
-	calSurface();
-	calVolume();
+	this->update();
 }
 
 CCuboid::CCuboid(double xlen, double ylen, double zlen) :CSolid()
@@ -345,8 +329,7 @@ CCuboid::CCuboid(double xlen, double ylen, double zlen) :CSolid()
 	xedge = xlen;
 	yedge = ylen;
 	zedge = zlen;
-	calSurface();
-	calVolume();
+	this->update();
 }
 
 void CCuboid::calSurface()
@@ -357,6 +340,14 @@ void CCuboid::calSurface()
 void CCuboid::calVolume()
 {
 	this->volume = xedge * yedge * zedge;
+}
+
+void CCuboid::resize(double xlen, double ylen, double zlen)
+{
+	xedge = xlen;
+	yedge = ylen;
+	zedge = zlen;
+	this->update();
 }
 
 void CCuboid::scaling(double factor)
@@ -379,21 +370,12 @@ void CCuboid::print()
 }
 
 /* Public functions of class CCylinder */
-CCylinder::CCylinder() :CSolid()
-{
-	radius = 1;		// unit globe.
-	height = 1;
-	calSurface();
-	calVolume();
-}
-
 CCylinder::CCylinder(double r, double high) :CSolid()
 {
 	// unprotected. 2001292319
 	radius = r;
 	height = high;
-	calSurface();
-	calVolume();
+	this->update();
 }
 
 void CCylinder::calSurface()
@@ -404,6 +386,13 @@ void CCylinder::calSurface()
 void CCylinder::calVolume()
 {
 	this->volume = PI * radius * radius * height;
+}
+
+void CCylinder::resize(double rad, double high, double zlen)
+{
+	radius = rad;
+	height = high;
+	this->update();
 }
 
 void CCylinder::scaling(double factor)

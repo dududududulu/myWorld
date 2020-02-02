@@ -38,9 +38,26 @@ using namespace std;
 
 class CGeometry :public CFigure
 {
+protected:
+	virtual void calPerim() {};
+	virtual void calArea() {};
+	virtual void calSurface() {};
+	virtual void calVolume() {};
+	void update()
+	{
+		calPerim();
+		calArea();
+		calSurface();
+		calVolume();
+	};
 public:
 	CGeometry() :CFigure() {};
 	~CGeometry() {};
+	virtual double getPerim() { return 0; };
+	virtual double getArea() { return 0; };
+	virtual double getSurface() { return 0; };
+	virtual double getVolume() { return 0; };
+	virtual void resize(double, double = 1, double = 1) {};
 	virtual void scaling(double) {};
 	virtual void print() {};
 };
@@ -50,9 +67,9 @@ class CLine :public CGeometry
 protected:
 	double length;
 public:
-	CLine();
-	CLine(double);
+	CLine(double = 1);
 	~CLine() {};
+	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
 };
@@ -60,6 +77,10 @@ public:
 class CShape :public CGeometry
 {
 protected:
+	virtual void calPerim() {};
+	virtual void calArea() {};
+	virtual void calSurface() {};
+	virtual void calVolume() {};
 	double perimeter;
 	double area;
 public:
@@ -67,8 +88,7 @@ public:
 	~CShape() {};
 	double getPerim();
 	double getArea();
-	virtual void calPerim() {};
-	virtual void calArea() {};
+	virtual void resize(double, double = 1, double = 1);
 	virtual void scaling(double) {};
 	virtual void print() {};
 };
@@ -76,12 +96,13 @@ public:
 class CCircle :public CShape
 {
 	double radius;
-public:
-	CCircle();
-	CCircle(double);
-	~CCircle() {};
+protected:
 	void calPerim();
 	void calArea();
+public:
+	CCircle(double = 1);
+	~CCircle() {};
+	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
 };
@@ -97,14 +118,18 @@ class CPolygon :public CShape
 	double side;
 	double angle;
 	double realm;
+protected:
+	void calPerim();
+	void calArea();
 public:
 	CPolygon();
 	CPolygon(double);
 	~CPolygon() {};
+	void setRealm(double = 1);
+	double getRealm();
 	void setSide(double = 1);
 	double getSide();
-	void calPerim();
-	void calArea();
+	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
 };
@@ -115,8 +140,7 @@ CPolygon<SideNum>::CPolygon()
 	realm = 1;
 	angle = 2 * PI / SideNum;
 	side = 2 * realm * sin(angle / 2);
-	calPerim();
-	calArea();
+	this->update();
 }
 
 template<int SideNum>
@@ -124,23 +148,8 @@ CPolygon<SideNum>::CPolygon(double len)
 {
 	realm = 1;
 	angle = 2 * PI / SideNum;
-	side = 2 * realm * sin(angle / 2); \
-		setSide(len);
-}
-
-template<int SideNum>
-void CPolygon<SideNum>::setSide(double len)
-{
-	realm = len / side;
-	side = len;
-	calPerim();
-	calArea();
-}
-
-template<int SideNum>
-double CPolygon<SideNum>::getSide()
-{
-	return side;
+	side = 2 * realm * sin(angle / 2);
+	setSide(len);
 }
 
 template<int SideNum>
@@ -153,6 +162,36 @@ template<int SideNum>
 void CPolygon<SideNum>::calArea()
 {
 	this->area = side * realm * cos(angle / 2) * SideNum / 2;
+}
+
+template<int SideNum>
+void CPolygon<SideNum>::setRealm(double len)
+{
+	scaling(len);
+}
+
+template<int SideNum>
+double CPolygon<SideNum>::getRealm()
+{
+	return realm;
+}
+
+template<int SideNum>
+void CPolygon<SideNum>::setSide(double len)
+{
+	scaling(len / side);
+}
+
+template<int SideNum>
+double CPolygon<SideNum>::getSide()
+{
+	return side;
+}
+
+template<int SideNum>
+void CPolygon<SideNum>::resize(double realm, double ash1, double ash2)
+{
+	setRealm(realm);
 }
 
 template<int SideNum>
@@ -191,12 +230,13 @@ void CPolygon<SideNum>::print()
 class CSquare :public CShape
 {
 	double side;
-public:
-	CSquare();
-	CSquare(double);
-	~CSquare() {};
+protected:
 	void calPerim();
 	void calArea();
+public:
+	CSquare(double = 1);
+	~CSquare() {};
+	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
 };
@@ -204,13 +244,14 @@ public:
 class CRectangle :public CShape
 {
 	double xside, yside;
-public:
-	CRectangle();
-	CRectangle(double);
-	CRectangle(double, double);
-	~CRectangle() {};
+protected:
 	void calPerim();
 	void calArea();
+public:
+	CRectangle(double = 1);
+	CRectangle(double, double);
+	~CRectangle() {};
+	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
 };
@@ -219,12 +260,14 @@ class CFreeShape :public CShape
 {
 	double side;
 	// mapping function needed. unfinished. 2001291922
-public:
-	CFreeShape();
-	CFreeShape(double);
-	~CFreeShape() {};
+protected:
 	void calPerim();
 	void calArea();
+	// unfinished. 2002021607
+public:
+	CFreeShape(double = 1);
+	~CFreeShape() {};
+	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
 };
@@ -236,13 +279,15 @@ class CSolid :public CGeometry
 protected:
 	double surfaceArea;
 	double volume;
+protected:
+	virtual void calSurface() {};
+	virtual void calVolume() {};
 public:
 	CSolid();
 	~CSolid() {};
 	double getSurface();
 	double getVolume();
-	virtual void calSurface() {};
-	virtual void calVolume() {};
+	virtual void resize(double, double = 1, double = 1);
 	virtual void scaling(double) {};
 	virtual void print() {};
 };
@@ -250,12 +295,13 @@ public:
 class CGlobe :public CSolid
 {
 	double radius;
-public:
-	CGlobe();
-	CGlobe(double);
-	~CGlobe() {};
+protected:
 	void calSurface();
 	void calVolume();
+public:
+	CGlobe(double = 1);
+	~CGlobe() {};
+	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
 };
@@ -263,12 +309,13 @@ public:
 class CCube :public CSolid
 {
 	double edge;
-public:
-	CCube();
-	CCube(double);
-	~CCube() {};
+protected:
 	void calSurface();
 	void calVolume();
+public:
+	CCube(double = 1);
+	~CCube() {};
+	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
 };
@@ -276,13 +323,14 @@ public:
 class CCuboid :public CSolid
 {
 	double xedge, yedge, zedge;
-public:
-	CCuboid();
-	CCuboid(double);
-	CCuboid(double, double, double);
-	~CCuboid() {};
+protected:
 	void calSurface();
 	void calVolume();
+public:
+	CCuboid(double = 1);
+	CCuboid(double, double, double);
+	~CCuboid() {};
+	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
 };
@@ -290,12 +338,13 @@ public:
 class CCylinder :public CSolid
 {
 	double radius, height;
-public:
-	CCylinder();
-	CCylinder(double, double);
-	~CCylinder() {};
+protected:
 	void calSurface();
 	void calVolume();
+public:
+	CCylinder(double = 1, double = 1);
+	~CCylinder() {};
+	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
 };
@@ -305,12 +354,14 @@ class CPrism :public CSolid
 {
 	CPolygon<SideNum> polygon;
 	double height;
+protected:
+	void calSurface();
+	void calVolume();
 public:
 	CPrism();
 	CPrism(double, double);
 	~CPrism() {};
-	void calSurface();
-	void calVolume();
+	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
 };
@@ -319,8 +370,7 @@ template<int SideNum>
 CPrism<SideNum>::CPrism()
 {
 	height = 1;
-	calSurface();
-	calVolume();
+	this->update();
 }
 
 template<int SideNum>
@@ -328,8 +378,7 @@ CPrism<SideNum>::CPrism(double len, double high)
 {
 	polygon.setSide(len);
 	height = high;
-	calSurface();
-	calVolume();
+	this->update();
 }
 
 template<int SideNum>
@@ -342,6 +391,14 @@ template<int SideNum>
 void CPrism<SideNum>::calVolume()
 {
 	this->volume = height * polygon.getArea();
+}
+
+template<int SideNum>
+void CPrism<SideNum>::resize(double realm, double high, double ash)
+{
+	polygon.setRealm(realm);
+	height = high;
+	this->update();
 }
 
 template<int SideNum>

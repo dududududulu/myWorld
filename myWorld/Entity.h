@@ -56,24 +56,69 @@ class Entity
 protected:
 	string Name;
 	Ref<Dimension>* ref;
-	Status status;
+	Status* status;
 	//int validTime;
 	//int validZone;
 protected:
+	void new_init();
+	void empty();
 public:
-	Entity() {};
-	Entity(string&) {};
-	Entity(string&, int, int) {};
-	~Entity() {};
-	virtual void init() {};
+	Entity();
+	Entity(string&);
+	~Entity() {
+		empty();
+	};
+	void setName(string&);
+	virtual void init();
 	virtual void status_update();
 	virtual void print() {};
 };
+
+Entity::Entity()
+{
+	new_init();
+}
+
+Entity::Entity(string& name)
+{
+	new_init();
+	setName(name);
+}
+
+void Entity::new_init()
+{
+	empty();
+	ref = new Ref<Dimension>;
+	status = new Status;
+}
+
+void Entity::empty()
+{
+	if (ref) delete ref;
+	if (status) delete status;
+}
+
+void Entity::setName(string& name)
+{
+	Name = name;
+}
+
+void Entity::init()
+{
+	new_init();
+}
+
+void Entity::status_update()
+{
+	ref->movement(status->motion);
+}
+
 
 class Individual :public Entity
 {
 public:
 	Individual() :Entity() {};
+	Individual(string& name) :Entity(name) {};
 	~Individual() {};
 	virtual void init() {};
 	virtual void print() {};
