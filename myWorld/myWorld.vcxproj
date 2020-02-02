@@ -127,8 +127,10 @@
     <ClCompile Include="CGeometry.cpp" />
     <ClCompile Include="Concept.cpp" />
     <ClCompile Include="Effect.cpp" />
+    <ClCompile Include="Entity.cpp" />
     <ClCompile Include="myWorldTest.cpp" />
     <ClCompile Include="Object.cpp" />
+    <ClCompile Include="Observer.cpp" />
     <ClCompile Include="TestFile.cpp" />
   </ItemGroup>
   <ItemGroup>

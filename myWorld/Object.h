@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <cmath>
 #include "settings.h"
 #include "Matrix.h"
 #include "VectorSpace.h"
@@ -34,12 +35,9 @@ using namespace std;
 		1	2	3	4	*Pattern
 		1	2	3	Combine
 
-
-
 	///////////////////////////////////////////////////////////////
 
 */
-
 
 ///////////////////////////////////
 // Class Object.
@@ -49,11 +47,19 @@ protected:
 	double mass;
 	double volume;
 	double density;
+	int color;		// should be Vector<int, 3>. unfinished, 2002022050
+protected:
+	virtual void materialize() {};
 public:
-	Object() :Individual() {};
+	Object() :Individual() { color = 0; }; // unfinished, 2002022050
 	~Object() {};
+	double getMass() { return mass; };
+	double getVolume() { return volume; };
+	double getDensity() { return density; };
+	int getColor() { return color; };
 	virtual void init() {};
 	virtual void print() {};
+	virtual void display(Observer*) {};
 };
 
 class Element :public Object
@@ -62,11 +68,13 @@ protected:
 	int material;
 protected:
 	virtual void physical_init() {};
+	virtual void materialize() {};
 public:
 	Element() :Object() {};
 	~Element() {};
 	virtual void init() {};
 	virtual void print() {};
+	virtual void display(Observer*) {};
 };
 
 class Geometry :public Element
@@ -75,50 +83,165 @@ protected:
 	CGeometry* cgeo;
 protected:
 	void physical_init();
+	virtual void materialize() {};
 public:
-	Geometry(int = cube_geo, int = 0);
-	~Geometry() {};
+	Geometry(int = null_geo, int = 0, double = 1, double = 1, double = 1);
+	~Geometry() {
+		if (cgeo) delete cgeo;
+	};
 	void resize(double, double = 1, double = 1);
-	virtual void init() {};
-	virtual void print() {};
+	void init();
+	void print();
+	virtual void display(Observer*) {};
 };
 
-Geometry::Geometry(int GType, int GMaterial)
+class Line :public Geometry
 {
-	switch (GType)
+public:
+	Line(double len = 1) :Geometry(line_geo, 0, len) {};
+	~Line() {};
+	void display(Observer*);
+};
+
+class Shape :public Geometry
+{
+public:
+	Shape(int GType = null_geo, int GMaterial = 0, double size1 = 1, double size2 = 1, double size3 = 1)
+		:Geometry(GType, GMaterial, size1, size2, size3) {};
+	~Shape() {};
+	virtual void display(Observer*) {};
+};
+
+class Circle :public Shape
+{
+public:
+	Circle(double r = 1, int GMaterial = 0)
+		:Shape(circle_geo, GMaterial, r) {};
+	~Circle() {};
+	void display(Observer*);
+};
+
+class Square :public Shape
+{
+public:
+	Square(double side = 1, int GMaterial = 0)
+		:Shape(square_geo, GMaterial, side) {};
+	~Square() {};
+	void display(Observer*);
+};
+
+class Rectangle :public Shape
+{
+public:
+	Rectangle(double xside = 1, double yside = 1, int GMaterial = 0)
+		:Shape(rectangle_geo, GMaterial, xside, yside) {};
+	~Rectangle() {};
+	void display(Observer*);
+};
+
+template<int SideNum>
+class Polygon :public Shape
+{
+public:
+	Polygon(double side = 1, int GMaterial = 0)
+		:Shape(polygon_geo + SideNum - 2, GMaterial, side) {};
+	~Polygon() {};
+	void display(Observer* eye)
 	{
-	case line_geo: cgeo = new CLine; break;
-
-	case circle_geo: cgeo = new CCircle; break;
-	case square_geo: cgeo = new CSquare; break;
-	case rectangle_geo: cgeo = new CRectangle; break;
-	case triangle_geo: cgeo = new CPolygon<3>; break;
-	case pendagon_geo: cgeo = new CPolygon<5>; break;
-	case hexagon_geo: cgeo = new CPolygon<6>; break;
-
-	case globe_geo: cgeo = new CGlobe; break;
-	case cube_geo: cgeo = new CCube; break;
-	case cuboid_geo: cgeo = new CCuboid; break;
-	case cylinder_geo: cgeo = new CCylinder; break;
-	
-	default: cgeo = new CCube; break;
+		double realm = this->cgeo->getRealm(), rr;
+		double itr = -realm, jtr, jend;
+		double step = eye->mapping(this->ref->getOrigin());
+		int i, j;
+		while(itr < realm)
+		{
+			jend = sqrt(rr - itr * itr);
+			jtr = -jend;
+			while (jtr < 0)
+			{
+				//if (this->cgeo->isInside(/* unfinished */)) break;
+				jtr = jtr + step;
+			}
+			itr = itr + step;
+		}
 	}
+};
 
-	material = GMaterial;
-	physical_init();
-}
 
-void Geometry::physical_init()
+
+
+class Solid :public Geometry
 {
-	volume = cgeo->getVolume();
-	density = material_density(material);
-	mass = volume * density;
-}
+	Line* line;
+	Shape* shape;
+protected:
+	virtual void materialize() {};
+public:
+	Solid(int GType = null_geo, int GMaterial = 0, double size1 = 1, double size2 = 1, double size3 = 1)
+		:Geometry(GType, GMaterial, size1, size2, size3) {};
+	~Solid() {};
+	void display(Observer*);
+};
 
-void Geometry::resize(double size1, double size2, double size3)
+class Globe :public Solid
 {
-	cgeo->resize(size1, size2, size3);
-}
+protected:
+	void materialize();
+public:
+	Globe(double r = 1, int GMaterial = 0)
+		:Solid(globe_geo, GMaterial, r) {
+		materialize();
+	};
+	~Globe() {};
+};
+
+class Cube :public Solid
+{
+protected:
+	void materialize();
+public:
+	Cube(double edge = 1, int GMaterial = 0)
+		:Solid(cube_geo, GMaterial, edge) {
+		materialize();
+	};
+	~Cube() {};
+};
+
+class Cuboid :public Solid
+{
+protected:
+	void materialize();
+public:
+	Cuboid(double xedge = 1, double yedge = 1, double zedge = 1, int GMaterial = 0)
+		:Solid(cuboid_geo, GMaterial, xedge, yedge, zedge) {
+		materialize();
+	};
+	~Cuboid() {};
+};
+
+class Cylinder :public Solid
+{
+protected:
+	void materialize();
+public:
+	Cylinder(double r = 1, double height = 1, int GMaterial = 0)
+		:Solid(cylinder_geo, GMaterial, r, height) {
+		materialize();
+	};
+	~Cylinder() {};
+};
+
+class triPrism :public Solid
+{
+protected:
+	void materialize();
+public:
+	triPrism(double realm = 1, double height = 1, int GMaterial = 0)
+		:Solid(triprism_geo, GMaterial, realm, height) {
+		materialize();
+	};
+	~triPrism() {};
+};
+
 
 
 class Combine :public Object

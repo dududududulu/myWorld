@@ -69,8 +69,8 @@ public:
 	void setRot(const dVector<Dimension>&);
 	void addDrift(const dVector<Dimension>&);
 	void addRot(const dVector<Dimension>&);
-	dVector<Dimension> deviate(const dVector<Dimension>&);
-	LnBase<Dimension> deflect(const LnBase<Dimension>&);
+	dVector<Dimension> deviate(const dVector<Dimension>&)const;
+	LnBase<Dimension> deflect(const LnBase<Dimension>&)const;
 	void function();
 	void print();
 };

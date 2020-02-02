@@ -85,14 +85,14 @@ void Motion::addRot(const dVector<Dimension>& torque)
 	checkBalanced();
 }
 
-dVector<Dimension> Motion::deviate(const dVector<Dimension>& vec)
+dVector<Dimension> Motion::deviate(const dVector<Dimension>& vec)const
 {
 	if (is_origin) return vec;
 	dVector<Dimension> result = vec + translate * TimeElapse;
 	return result;
 }
 
-LnBase<Dimension> Motion::deflect(const LnBase<Dimension>& base)
+LnBase<Dimension> Motion::deflect(const LnBase<Dimension>& base)const
 {
 	if (is_balanced) return base;
 	LnBase<Dimension> result(base);

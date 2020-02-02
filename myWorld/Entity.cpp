@@ -1,6 +1,3 @@
-#ifndef _ENTITY_H
-#define _ENTITY_H
-
 #include <iostream>
 #include <cstring>
 #include "settings.h"
@@ -8,14 +5,15 @@
 #include "VectorSpace.h"
 #include "Reference.h"
 #include "Status.h"
+#include "Entity.h"
 using namespace std;
 
 /*
 
 	///////////////////////////////////////////////////////////////
 
-	File Name:              Entity.h
-	Date of Creation:       20200130
+	File Name:              Entity.cpp
+	Date of Creation:       20200202
 	Latest Revise:          20200202
 
 	Description:
@@ -48,45 +46,42 @@ using namespace std;
 
 */
 
-///////////////////////////////////
-// Class Entity.
 
-class Entity
+Entity::Entity()
 {
-protected:
-	string Name;
-	Ref<Dimension>* ref;
-	Status* status;
-	//int validTime;
-	//int validZone;
-protected:
-	void new_init();
-	void empty();
-public:
-	Entity();
-	Entity(string&);
-	~Entity() {
-		empty();
-	};
-	void setName(string&);
-	virtual void init();
-	virtual void status_update();
-	virtual void print() {};
-	virtual void display(Observer*) {};
-};
+	new_init();
+}
 
-
-class Individual :public Entity
+Entity::Entity(string& name)
 {
-public:
-	Individual() :Entity() {};
-	Individual(string& name) :Entity(name) {};
-	~Individual() {};
-	virtual void init() {};
-	virtual void print() {};
-	virtual void display(Observer*) {};
-};
+	new_init();
+	setName(name);
+}
 
+void Entity::new_init()
+{
+	empty();
+	ref = new Ref<Dimension>;
+	status = new Status;
+}
 
+void Entity::empty()
+{
+	if (ref) delete ref;
+	if (status) delete status;
+}
 
-#endif
+void Entity::setName(string& name)
+{
+	Name = name;
+}
+
+void Entity::init()
+{
+	new_init();
+}
+
+void Entity::status_update()
+{
+	ref->movement(status->motion);
+}

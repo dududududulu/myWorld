@@ -2,7 +2,6 @@
 #define _REFERENCE_H
 
 #include <iostream>
-#include <cstring>
 #include <cmath>
 #include <iomanip>
 #include "settings.h"
@@ -51,9 +50,13 @@ public:
 	bool isAbsolute();
 	void setOrigin(const dVector<dim>&);
 	void setBase(const dMatrix<dim, dim>&);
+	dVector<dim> getOrigin();
 	dVector<dim> revert(const dVector<dim>&);                       // revert the vector in this to absolute reference
 	dVector<dim> project(const dVector<dim>&);                      // project the absolute vector to this
 	dVector<dim> project(const dVector<dim>&, const Ref<dim>&);     // project the Ref vector to this
+	void deviate(const dVector<dim>&);
+	void rotate(const dVector<dim>&);
+	void rotate(const dMatrix<dim, dim>&);
 	void movement(const Motion&);
 };
 
@@ -95,6 +98,12 @@ void Ref<dim>::setBase(const dMatrix<dim, dim>& mat)
 }
 
 template<int dim>
+dVector<dim> Ref<dim>::getOrigin()
+{
+	return origin;
+}
+
+template<int dim>
 dVector<dim> Ref<dim>::revert(const dVector<dim>& rvec)                       // revert the vector in this to absolute reference
 {
 	dVector<dim> result;
@@ -119,11 +128,57 @@ dVector<dim> Ref<dim>::project(const dVector<dim>& rvec, const Ref<dim>& ref)   
 }
 
 template<int dim>
+void Ref<dim>::deviate(const dVector<dim>& vec)
+{
+	setOrigin(origin + vec);
+}
+
+template<int dim>
+void Ref<dim>::rotate(const dVector<dim>& vec)
+{
+	base.rotate(vec);
+}
+
+template<int dim>
+void Ref<dim>::rotate(const dMatrix<dim, dim>& mat)
+{
+	base.rotate(mat);
+}
+
+template<int dim>
 void Ref<dim>::movement(const Motion& motion)
 {
 	origin = motion.deviate(origin);
 	base = motion.deflect(base);
 }
+
+
+//////////////////////////////////////////////////////////////////////    Observer
+
+class Observer
+{
+	Ref<Dimension> ref;
+	double depth;
+	int view;
+	dVector<Dimension> focus;
+	int graph[GLength][GWidth];
+	double distance[GLength][GWidth];
+protected:
+	void view_graph(int, int, int = 0);
+public:
+	Observer(double = 1, int = UpView);
+	~Observer() {};
+	void setView(int);
+	int getView();
+	void setDepth(double);
+	double getDepth();
+	void deviate(const dVector<Dimension>&);
+	void rotate(const dVector<Dimension>&);
+	void rotate(const dMatrix<Dimension, Dimension>&);
+	void movement(const Motion&);
+	double mapping(const dVector<Dimension>&, int);
+};
+
 
 
 #endif

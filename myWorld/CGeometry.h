@@ -53,6 +53,7 @@ protected:
 public:
 	CGeometry() :CFigure() {};
 	~CGeometry() {};
+	//virtual bool isInside(const dVector2d&) { return 0; };
 	virtual double getPerim() { return 0; };
 	virtual double getArea() { return 0; };
 	virtual double getSurface() { return 0; };
@@ -88,7 +89,7 @@ public:
 	~CShape() {};
 	double getPerim();
 	double getArea();
-	virtual void resize(double, double = 1, double = 1);
+	virtual void resize(double, double = 1, double = 1) {};
 	virtual void scaling(double) {};
 	virtual void print() {};
 };
@@ -118,6 +119,7 @@ class CPolygon :public CShape
 	double side;
 	double angle;
 	double realm;
+
 protected:
 	void calPerim();
 	void calArea();
@@ -125,6 +127,7 @@ public:
 	CPolygon();
 	CPolygon(double);
 	~CPolygon() {};
+	bool isInside(const dVector2d&);
 	void setRealm(double = 1);
 	double getRealm();
 	void setSide(double = 1);
@@ -149,7 +152,7 @@ CPolygon<SideNum>::CPolygon(double len)
 	realm = 1;
 	angle = 2 * PI / SideNum;
 	side = 2 * realm * sin(angle / 2);
-	setSide(len);
+	setRealm(len);
 }
 
 template<int SideNum>
@@ -287,7 +290,7 @@ public:
 	~CSolid() {};
 	double getSurface();
 	double getVolume();
-	virtual void resize(double, double = 1, double = 1);
+	virtual void resize(double, double = 1, double = 1) {};
 	virtual void scaling(double) {};
 	virtual void print() {};
 };

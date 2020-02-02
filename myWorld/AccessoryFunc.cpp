@@ -1,6 +1,6 @@
 #include <iostream>
 #include "settings.h"
-#include "Reference.h"
+//#include "Reference.h"
 #include "Matrix.h"
 #include "VectorSpace.h"
 using namespace std;

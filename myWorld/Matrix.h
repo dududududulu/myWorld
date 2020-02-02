@@ -208,7 +208,7 @@ public:
 	~uMatrix() {};                                                                          // destructor.
 	virtual T getElement(int = 0)const;                                                     // get the element of the matrix.
 	T getElement(int, int)const;                                                            // get the element of the matrix.
-	void setElement(const T&, int, int);                                               // set the element of the matrix.
+	void setElement(const T&, int, int);                                                    // set the element of the matrix.
 	int getRank();                                                                          // get the rank of the matrix. no change to rank.
 	bool isZero();                                                                          // whether it is all zeros.
 	bool isIdentity();                                                                      // whether it is identity.
@@ -216,6 +216,7 @@ public:
 	Vector<T, mRows> getColumn(int = 0);                                                    // get jth column.
 	uMatrix<T, nCols, mRows> transpose();                                                   // get the transpose of the matrix.
 	uMatrix<T, mRows + nCols, mRows + nCols> diagnolization();                              // diagonalize the . update the rank.
+	void SchmitOrth();
 	void operator=(const uMatrix<T, mRows, nCols>&);                                        // =  overload. rank already set.
 	friend ostream& operator<<<T, mRows, nCols>(ostream& s, uMatrix<T, mRows, nCols>&);     // << overload.
 	//friend uMatrix<T, mRows, mRows> rotator(const dVector<mRows>&);
@@ -800,6 +801,25 @@ uMatrix<T, mRows + nCols, mRows + nCols> uMatrix<T, mRows, nCols>::diagnolizatio
 	uMatrix<T, nCols, mRows> allzero;
 	uMatrix<T, mRows + nCols, mRows + nCols> result = (my | left_trans) / (right_trans | allzero);
 	return result;
+}
+
+template<typename T, int mRows, int nCols>
+void uMatrix<T, mRows, nCols>::SchmitOrth()							// get transpose.
+{
+	int i, j;
+	double projection;
+	Vector<T, mRows> cur_col, remove_col;
+	for (i = 0; i < nCols; ++i)
+	{
+		cur_col = getColumn(i);
+		for (j = 0; j < i; ++j)
+		{
+			remove_col = getColumn(j);
+			cur_col = cur_col.extract(remove_col);
+		}
+		cur_col.normalize();
+		setColumn(cur_col, i);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

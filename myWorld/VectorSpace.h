@@ -88,16 +88,16 @@ public:
 		//cout << "- Destructor Vector." << endl;
 	};
 	virtual T getElement(int)const;                            // get the ith element
-	virtual void setElement(const T&, int) {  };               // set the ith element
+	virtual void setElement(const T&, int) {};                 // set the ith element
 	bool isOrigin();
 	T getLen()const { return this->length; };
 	T* getDir()const { return this->direction; };
 	int getDim() { return dim; };                              // get dimension.
 	void normalize(const T& = 1);                              // normalize the vector under specific scale.
-	T& dot(VectorFrame<T, dim>&);                              // * target vec.
-	T& project(VectorFrame<T, dim>&);                          // get the projection on the target vec.
-	template<class VType> VType projectVec(VType&);            // get the component in line with the target vec.
-	template<class VType> VType extract(VType&);               // get the component perpendicular with the target vec.
+	T& getSum();
+	T& dot(VectorFrame<T, dim>&)const;                         // * target vec.
+	T& project(VectorFrame<T, dim>&)const;                     // get the projection on the target vec.
+	bool operator>(const T&);
 	void operator=(const VectorFrame<T, dim>);                 // = overload.
 };
 
@@ -307,7 +307,17 @@ void VectorFrame<T, dim>::normalize(const T& scale)
 }
 
 template<typename T, int dim>
-T& VectorFrame<T, dim>::dot(VectorFrame<T, dim>& vec)
+T& VectorFrame<T, dim>::getSum()
+{
+	int i;
+	T ans = 0;
+	for (i = 0; i < dim; ++i)
+		ans = ans + getElement(i);
+	return ans;
+}
+
+template<typename T, int dim>
+T& VectorFrame<T, dim>::dot(VectorFrame<T, dim>& vec)const
 {
 	T ans = 0;
 	int i;
@@ -317,29 +327,11 @@ T& VectorFrame<T, dim>::dot(VectorFrame<T, dim>& vec)
 }
 
 template<typename T, int dim>
-T& VectorFrame<T, dim>::project(VectorFrame<T, dim>& vec)
+T& VectorFrame<T, dim>::project(VectorFrame<T, dim>& vec)const
 {
 	T ans = this->dot(vec);
-	if (!infinitesimal(vec->length)) ans = ans / vec->length;
+	if (!infinitesimal(vec.length)) ans = ans / vec.length;
 	return ans;
-}
-
-template<typename T, int dim>
-template<class VType>
-VType VectorFrame<T, dim>::projectVec(VType& vec)
-{
-	VType result(vec);
-	result.normalize(this->project(vec));
-	return result;
-}
-
-template<typename T, int dim>
-template<class VType>
-VType VectorFrame<T, dim>::extract(VType& vec)
-{
-	VType result(this);
-	result = result - this->projectVec(vec);
-	return result;
 }
 
 template<typename T, int dim>
@@ -352,6 +344,15 @@ void VectorFrame<T, dim>::operator=(const VectorFrame<T, dim> vec)
 		this->direction[i] = vec.direction[i];
 	}
 	this->length = vec.length;
+}
+
+template<typename T, int dim>
+bool VectorFrame<T, dim>::operator>(const T& data)
+{
+	int i;
+	for (i = 0; i < dim; ++i)
+		if (getElement(i) <= data) return 0;
+	return 1;
 }
 
 
@@ -396,6 +397,8 @@ public:
 	Vector(int type = 0, int num = 0);                                              // default constructor.
 	Vector(T&);		                                 // constructor.
 	Vector(T*);                                      // constructor.
+	Vector(T, T);                                    // constructor.
+	Vector(T, T, T);                                 // constructor.
 	Vector(const Vector<T, dim>&);                   // copy constructor.
 	Vector(const Vector<T, dim>*);                   // copy constructor.
 	~Vector() {                                      // destructor.
@@ -404,7 +407,9 @@ public:
 	};
 	T getElement(int)const;
 	void setElement(const T&, int);
-	tVector<T, dim> transpose()const;                     // transpose.
+	tVector<T, dim> transpose()const;                // transpose.
+	Vector<T, dim> projectVec(Vector<T, dim>&)const; // get the component in line with the target vec.
+	Vector<T, dim> extract(Vector<T, dim>&)const;    // get the component perpendicular with the target vec.
 	void operator=(const Vector<T, dim>);            // = overload.
 	//friend ostream& operator<<<T, dim>(ostream& s, Vector<T, dim>&);    // << overload.
 	// unfinished. 2001301525
@@ -424,6 +429,7 @@ public:
 	friend Vector<T, dim> operator-(const Vector<T, dim>& my, const T& k) { return my.arithmetic(-k, 0); };
 	friend Vector<T, dim> operator-(const T& k, const Vector<T, dim>& my) { return my.arithmetic(k, 1); };
 
+	friend Vector<T, dim> operator*(const T& k, const Vector<T, dim>& my) { return my.arithmetic(k, 2); }
 	friend Vector<T, dim> operator*(const Vector<T, dim>& my, const T& k) { return my.arithmetic(k, 2); }
 	friend Vector<T, dim> operator*(const Vector<T, dim>& my, const Vector<T, dim>& vec) { return my.arithmetic(vec, 2); }
 	friend Vector<T, dim> operator^(const Vector<T, dim>& my, const Vector<T, dim>& vec) { return my.arithmetic(vec, 3); }
@@ -453,6 +459,23 @@ template<typename T, int dim>
 Vector<T, dim>::Vector(T& data)
 {
 	this->data_init(data);
+};
+
+template<typename T, int dim>
+Vector<T, dim>::Vector(T data1, T data2)
+{
+	this->zero();
+	setElement(data1, 0);
+	setElement(data2, 1);
+};
+
+template<typename T, int dim>
+Vector<T, dim>::Vector(T data1, T data2, T data3)
+{
+	this->zero();
+	setElement(data1, 0);
+	setElement(data2, 1);
+	setElement(data3, 2);
 };
 
 template<typename T, int dim>
@@ -616,6 +639,7 @@ template<typename T, int dim>
 void Vector<T, dim>::setElement(const T& data, int index)
 {
 	this->vectorSet[index][0] = data;
+	this->update();
 }
 
 template<typename T, int dim>
@@ -629,6 +653,22 @@ tVector<T, dim> Vector<T, dim>::transpose()const
 		result.direction[i] = this->direction[i];
 	}
 	result.length = this->length;
+	return result;
+}
+
+template<typename T, int dim>
+Vector<T, dim> Vector<T, dim>::projectVec(Vector<T, dim>& vec)const
+{
+	Vector<T, dim> result(vec);
+	result.normalize(this->project(vec));
+	return result;
+}
+
+template<typename T, int dim>
+Vector<T, dim> Vector<T, dim>::extract(Vector<T, dim>& vec)const
+{
+	Vector<T, dim> result(this);
+	result = result - this->projectVec(vec);
 	return result;
 }
 
@@ -694,6 +734,8 @@ public:
 	tVector(int = 0, int = 0);                        // default constructor.
 	tVector(T&);                                      // constructor.
 	tVector(T*);                                      // constructor.
+	tVector(T, T);                                    // constructor.
+	tVector(T, T, T);                                 // constructor.
 	tVector(const tVector<T, dim>&);                  // copy constructor.
 	tVector(const tVector<T, dim>*);                  // copy constructor.
 	~tVector() {                                      // destructor.
@@ -702,8 +744,10 @@ public:
 	};
 	T getElement(int)const;
 	void setElement(const T&, int);
-	Vector<T, dim> transpose();                       // transpose.
-	void operator=(const tVector<T, dim>);            // = overload.
+	Vector<T, dim> transpose();                        // transpose.
+	tVector<T, dim> projectVec(tVector<T, dim>&)const; // get the component in line with the target vec.
+	tVector<T, dim> extract(tVector<T, dim>&)const;    // get the component perpendicular with the target vec.
+	void operator=(const tVector<T, dim>);             // = overload.
 	friend ofstream& operator<<<T, dim>(ofstream&, tVector<T, dim>&);     // << overload.
 
 	template<int rowDim>
@@ -721,6 +765,7 @@ public:
 	friend tVector<T, dim> operator-(const tVector<T, dim>& my, const T& k) { return my.arithmetic(-k, 0); };
 	friend tVector<T, dim> operator-(const T& k, const tVector<T, dim>& my) { return my.arithmetic(k, 1); };
 
+	friend tVector<T, dim> operator*(const T& k, const tVector<T, dim>& my) { return my.arithmetic(k, 2); }
 	friend tVector<T, dim> operator*(const tVector<T, dim>& my, const T& k) { return my.arithmetic(k, 2); }
 	friend tVector<T, dim> operator*(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.arithmetic(tvec, 2); }
 	friend tVector<T, dim> operator^(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.arithmetic(tvec, 3); }
@@ -755,6 +800,23 @@ template<typename T, int dim>
 tVector<T, dim>::tVector(T* data)
 {
 	this->data_init(data);
+};
+
+template<typename T, int dim>
+tVector<T, dim>::tVector(T data1, T data2)
+{
+	this->zero();
+	setElement(data1, 0);
+	setElement(data2, 1);
+};
+
+template<typename T, int dim>
+tVector<T, dim>::tVector(T data1, T data2, T data3)
+{
+	this->zero();
+	setElement(data1, 0);
+	setElement(data2, 1);
+	setElement(data3, 2);
 };
 
 template<typename T, int dim>
@@ -908,6 +970,7 @@ template<typename T, int dim>
 void tVector<T, dim>::setElement(const T& data, int index)
 {
 	this->vectorSet[0][index] = data;
+	this->update();
 }
 
 template<typename T, int dim>
@@ -921,6 +984,22 @@ Vector<T, dim> tVector<T, dim>::transpose()
 		result.direction[i] = this->direction[i];
 	}
 	result.length = this->length;
+	return result;
+}
+
+template<typename T, int dim>
+tVector<T, dim> tVector<T, dim>::projectVec(tVector<T, dim>& vec)const
+{
+	tVector<T, dim> result(vec);
+	result.normalize(this->project(vec));
+	return result;
+}
+
+template<typename T, int dim>
+tVector<T, dim> tVector<T, dim>::extract(tVector<T, dim>& vec)const
+{
+	tVector<T, dim> result(this);
+	result = result - this->projectVec(vec);
 	return result;
 }
 
@@ -1019,21 +1098,7 @@ template<int dim>
 void LnBase<dim>::SchmitOrth()
 {
 	if (checkBase()) return;
-	int i, j;
-	double projection;
-	dVector<dim> cur_col;
-	dVector<dim> remove_col;
-	for (i = 0; i < dim; ++i)
-	{
-		cur_col = baseMatrix.getColumn(i);
-		for (j = 0; j < i; ++j)
-		{
-			remove_col = baseMatrix.getColmn(j);
-			cur_col = cur_col.extract(remove_col);
-		}
-		cur_col.normalize();
-		baseMatrix.setColumn(cur_col, i);
-	}
+	baseMatrix.SchmitOrth();
 }
 
 template<int dim>
