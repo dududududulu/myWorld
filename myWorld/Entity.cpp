@@ -61,13 +61,11 @@ Entity::Entity(string& name)
 void Entity::new_init()
 {
 	empty();
-	ref = new Ref<Dimension>;
 	status = new Status;
 }
 
 void Entity::empty()
 {
-	if (ref) delete ref;
 	if (status) delete status;
 }
 

@@ -212,8 +212,10 @@ public:
 	int getRank();                                                                          // get the rank of the matrix. no change to rank.
 	bool isZero();                                                                          // whether it is all zeros.
 	bool isIdentity();                                                                      // whether it is identity.
-	tVector<T, nCols> getRow(int = 0);                                                      // get ith row.
-	Vector<T, mRows> getColumn(int = 0);                                                    // get jth column.
+	tVector<T, nCols> getRow(int = 0)const;                                                 // get ith row.
+	Vector<T, mRows> getColumn(int = 0)const;                                               // get jth column.
+	Vector<T, mRows> getRowLen()const;                                                      // get the length of rows.
+	tVector<T, nCols> getColLen()const;                                                     // get the length of columns.
 	uMatrix<T, nCols, mRows> transpose();                                                   // get the transpose of the matrix.
 	uMatrix<T, mRows + nCols, mRows + nCols> diagnolization();                              // diagonalize the . update the rank.
 	void SchmitOrth();
@@ -757,7 +759,7 @@ bool uMatrix<T, mRows, nCols>::isIdentity()													// get rank.
 }
 
 template<typename T, int mRows, int nCols>
-tVector<T, nCols> uMatrix<T, mRows, nCols>::getRow(int rindex)							// get row.
+tVector<T, nCols> uMatrix<T, mRows, nCols>::getRow(int rindex)const							// get row.
 {
 	_tVector<T, nCols> result;
 	for (int j = 0; j < nCols; ++j)
@@ -766,11 +768,45 @@ tVector<T, nCols> uMatrix<T, mRows, nCols>::getRow(int rindex)							// get row.
 }
 
 template<typename T, int mRows, int nCols>
-Vector<T, mRows> uMatrix<T, mRows, nCols>::getColumn(int cindex)						// get column.
+Vector<T, mRows> uMatrix<T, mRows, nCols>::getColumn(int cindex)const						// get column.
 {
 	_Vector<T, mRows> result;
 	for (int i = 0; i < mRows; ++i)
 		result.vectorSet[i][0] = vectorSet[i][cindex];
+	return result;
+}
+
+template<typename T, int mRows, int nCols>
+Vector<T, mRows> uMatrix<T, mRows, nCols>::getRowLen()const							// get row.
+{
+	T ans;
+	int i, j;
+	Vector<T, mRows> result;
+	for (i = 0; i < mRows; ++i)
+	{
+		ans = 0;
+		for (j = 0; j < nCols; ++j)
+			ans = ans + vectorSet[i][j] * vectorSet[i][j];
+		result.setElement(ans, i);
+	}
+	result.update();
+	return result;
+}
+
+template<typename T, int mRows, int nCols>
+tVector<T, nCols> uMatrix<T, mRows, nCols>::getColLen()const						// get column.
+{
+	T ans;
+	int i, j;
+	tVector<T, nCols> result;
+	for (j = 0; j < nCols; ++j)
+	{
+		ans = 0;
+		for (i = 0; i < mRows; ++i)
+			ans = ans + vectorSet[i][j] * vectorSet[i][j];
+		result.setElement(ans, j);
+	}
+	result.update();
 	return result;
 }
 

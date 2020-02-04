@@ -50,6 +50,12 @@ using namespace std;
 #define freesolid_geo    solid_geo + 99
 
 
+#define point_packing    0
+#define frame_packing    1
+#define connect_packing  2
+#define shape_packing    3
+
+
 /* Calculation */
 #define Numerical_Error  1e-9
 

@@ -150,7 +150,7 @@ public:
 	{
 		double realm = this->cgeo->getRealm(), rr;
 		double itr = -realm, jtr, jend;
-		double step = eye->mapping(this->ref->getOrigin());
+		double step = eye->point_mapping(this->ref->getOrigin());
 		int i, j;
 		while(itr < realm)
 		{

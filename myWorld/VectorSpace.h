@@ -79,6 +79,8 @@ protected:
 	void vminusf(const T&);                                    // k - my.
 	void v_multiple(const T&);                                 // .* k.
 	void v_multiple(const VectorFrame<T, dim>&);               // .* vec.
+	void v_divide(const T&);                                   // ./ k.
+	void v_divideb(const T&);                                  // k ./ my.
 	void vcross(const VectorFrame<T, dim>&);                   // cross vec.
 
 public:
@@ -272,6 +274,21 @@ void VectorFrame<T, dim>::v_multiple(const VectorFrame<T, dim>& vec)							// .*
 }
 
 template<typename T, int dim>
+void VectorFrame<T, dim>::v_divide(const T& k)							// .* vec.
+{
+	if (k == 0) return;
+	v_multiple(1 / k);
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::v_divideb(const T& k)							// .* vec.
+{
+	for (int i = 0; i < dim; ++i)
+		if (getElement(i) != 0) setElement(k / getElement(i));
+	update();
+}
+
+template<typename T, int dim>
 void VectorFrame<T, dim>::vcross(const VectorFrame<T, dim>& vec)							// cross vec.
 {
 	if (dim != 3) return;
@@ -366,6 +383,14 @@ template<typename T> using Vector2d = Vector<T, 2>;
 template<typename T> using Vector3d = Vector<T, 3>;
 using dVector2d = Vector<double, 2>;
 using dVector3d = Vector<double, 3>;
+using dVectordim = Vector<double, Dimension>;
+
+template<int dim> using dtVector = tVector<double, dim>;
+template<typename T> using tVector2d = tVector<T, 2>;
+template<typename T> using tVector3d = tVector<T, 3>;
+using dtVector2d = tVector<double, 2>;
+using dtVector3d = tVector<double, 3>;
+using dtVectordim = tVector<double, Dimension>;
 
 template<typename T, int dim>
 class Vector :public _Vector<T, dim>, public VectorFrame<T, dim>
@@ -385,13 +410,19 @@ protected:
 	Vector<T, dim> arithmetic(const T&, int)const;                                  // + vec.
 
 	template<int colDim>
-	uMatrix<T, dim, colDim> cross(const uMatrix<T, dim, colDim>& vec)const;             // cross vec.
+	uMatrix<T, dim, colDim> vadd(const uMatrix<T, dim, colDim>&)const;
+	template<int colDim>
+	uMatrix<T, dim, colDim> vminus(const uMatrix<T, dim, colDim>&)const;
+	template<int colDim>
+	uMatrix<T, dim, colDim> vminusf(const uMatrix<T, dim, colDim>&)const;
 	template<int colDim>
 	uMatrix<T, dim, colDim> multiple(const tVector<T, colDim>&)const;               // * tvec.
 	template<int colDim>
 	uMatrix<T, dim, colDim> _multiple(const uMatrix<T, dim, colDim>&)const;         // .* mat.
 	template<int rowDim>
 	Vector<T, rowDim> multipleb(const uMatrix<T, rowDim, dim>&)const;               // mat * vec.
+	template<int colDim>
+	uMatrix<T, dim, colDim> cross(const uMatrix<T, dim, colDim>& vec)const;             // cross vec.
 
 public:
 	Vector(int type = 0, int num = 0);                                              // default constructor.
@@ -433,18 +464,27 @@ public:
 	friend Vector<T, dim> operator*(const Vector<T, dim>& my, const T& k) { return my.arithmetic(k, 2); }
 	friend Vector<T, dim> operator*(const Vector<T, dim>& my, const Vector<T, dim>& vec) { return my.arithmetic(vec, 2); }
 	friend Vector<T, dim> operator^(const Vector<T, dim>& my, const Vector<T, dim>& vec) { return my.arithmetic(vec, 3); }
+	friend Vector<T, dim> operator/(const Vector<T, dim>& my, const T& k) { return my.arithmetic(k, 3); }
+	friend Vector<T, dim> operator/(const T& k, const Vector<T, dim>& my) { return my.arithmetic(k, 4); }
 
 	template<int colDim>
-	friend uMatrix<T, dim, colDim> operator^(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my.cross(mat); }
+	friend uMatrix<T, dim, colDim> operator+(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my.vadd(mat); }
 	template<int colDim>
-	friend uMatrix<T, dim, colDim> operator^(const uMatrix<T, dim, colDim>& mat, const Vector<T, dim>& my) { return my.cross(mat); }
+	friend uMatrix<T, dim, colDim> operator+(const uMatrix<T, dim, colDim>& mat, const Vector<T, dim>& my) { return my.vadd(mat); }
+	template<int colDim>
+	friend uMatrix<T, dim, colDim> operator-(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my.vminus(mat); }
+	template<int colDim>
+	friend uMatrix<T, dim, colDim> operator-(const uMatrix<T, dim, colDim>& mat, const Vector<T, dim>& my) { return my.vminusf(mat); }
 	template<int colDim>
 	friend uMatrix<T, dim, colDim> operator*(const Vector<T, dim>& my, const tVector<T, colDim>& tvec) { return my.multiple(tvec); }
 	template<int colDim>
 	friend uMatrix<T, dim, colDim> operator*(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my._multiple(mat); }
 	template<int rowDim>
 	friend Vector<T, rowDim> operator*(const uMatrix<T, rowDim, dim>& mat, const Vector<T, dim>& my) { return my.multipleb(mat); }
-
+	template<int colDim>
+	friend uMatrix<T, dim, colDim> operator^(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my.cross(mat); }
+	template<int colDim>
+	friend uMatrix<T, dim, colDim> operator^(const uMatrix<T, dim, colDim>& mat, const Vector<T, dim>& my) { return my.cross(mat); }
 };
 
 template<typename T, int dim>
@@ -569,6 +609,8 @@ Vector<T, dim> Vector<T, dim>::arithmetic(const T& k, int type)const
 	case 0: result.vadd(k); break;
 	case 1: result.vminusf(k); break;
 	case 2: result.v_multiple(k); break;
+	case 3: result.v_divide(k); break;
+	case 4: result.v_divideb(k); break;
 	default: cout << "Error Occurs: Arithmetic" << endl;
 	}
 	return result;
@@ -576,17 +618,37 @@ Vector<T, dim> Vector<T, dim>::arithmetic(const T& k, int type)const
 
 template<typename T, int dim>
 template<int colDim>
-uMatrix<T, dim, colDim> Vector<T, dim>::cross(const uMatrix<T, dim, colDim>& mat)const			// .* mat.
+uMatrix<T, dim, colDim> Vector<T, dim>::vadd(const uMatrix<T, dim, colDim>& mat)const
 {
-	if (dim != 3) return mat;
-	int j;
-	uMatrix<T, dim, colDim> result;
-	for (j = 0; j < colDim; ++j)
-	{
-		result.vectorSet[0][j] = this->vectorSet[1][0] * mat.vectorSet[2][j] - this->vectorSet[2][0] * mat.vectorSet[1][j];
-		result.vectorSet[1][j] = this->vectorSet[2][0] * mat.vectorSet[0][j] - this->vectorSet[0][0] * mat.vectorSet[2][j];
-		result.vectorSet[2][j] = this->vectorSet[0][0] * mat.vectorSet[1][j] - this->vectorSet[1][0] * mat.vectorSet[0][j];
-	}
+	uMatrix<T, dim, colDim> result(mat);
+	int i, j;
+	for (i = 0; i < dim; ++i)
+		for (j = 0; j < colDim; ++j)
+			result.vectorSet[i][j] = result.vectorSet[i][j] + getElement(i);
+	return result;
+}
+
+template<typename T, int dim>
+template<int colDim>
+uMatrix<T, dim, colDim> Vector<T, dim>::vminus(const uMatrix<T, dim, colDim>& mat)const
+{
+	uMatrix<T, dim, colDim> result(mat);
+	int i, j;
+	for (i = 0; i < dim; ++i)
+		for (j = 0; j < colDim; ++j)
+			result.vectorSet[i][j] = getElement(i) - result.vectorSet[i][j];
+	return result;
+}
+
+template<typename T, int dim>
+template<int colDim>
+uMatrix<T, dim, colDim> Vector<T, dim>::vminusf(const uMatrix<T, dim, colDim>& mat)const
+{
+	uMatrix<T, dim, colDim> result(mat);
+	int i, j;
+	for (i = 0; i < dim; ++i)
+		for (j = 0; j < colDim; ++j)
+			result.vectorSet[i][j] = result.vectorSet[i][j] - getElement(i);
 	return result;
 }
 
@@ -626,6 +688,22 @@ Vector<T, rowDim> Vector<T, dim>::multipleb(const uMatrix<T, rowDim, dim>& mat)c
 			result.vectorSet[i][0] += mat.vectorSet[i][j] * getElement(j);
 	}
 	result.update();
+	return result;
+}
+
+template<typename T, int dim>
+template<int colDim>
+uMatrix<T, dim, colDim> Vector<T, dim>::cross(const uMatrix<T, dim, colDim>& mat)const			// .* mat.
+{
+	if (dim != 3) return mat;
+	int j;
+	uMatrix<T, dim, colDim> result;
+	for (j = 0; j < colDim; ++j)
+	{
+		result.vectorSet[0][j] = this->vectorSet[1][0] * mat.vectorSet[2][j] - this->vectorSet[2][0] * mat.vectorSet[1][j];
+		result.vectorSet[1][j] = this->vectorSet[2][0] * mat.vectorSet[0][j] - this->vectorSet[0][0] * mat.vectorSet[2][j];
+		result.vectorSet[2][j] = this->vectorSet[0][0] * mat.vectorSet[1][j] - this->vectorSet[1][0] * mat.vectorSet[0][j];
+	}
 	return result;
 }
 
@@ -699,12 +777,6 @@ ofstream& operator<<(ofstream &s, Vector<T, dim>& vec)
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-template<int dim> using dtVector = tVector<double, dim>;
-template<typename T> using tVector2d = tVector<T, 2>;
-template<typename T> using tVector3d = tVector<T, 3>;
-using dtVector2d = tVector<double, 2>;
-using dtVector3d = tVector<double, 3>;
-
 template<typename T, int dim>
 class tVector :public _tVector<T, dim>, public VectorFrame<T, dim>
 {
@@ -724,11 +796,17 @@ protected:
 	T multiple(const Vector<T, dim>&)const;
 
 	template<int rowDim>
-	uMatrix<T, rowDim, dim> cross(const uMatrix<T, rowDim, dim>&)const;
+	uMatrix<T, rowDim, dim> vadd(const uMatrix<T, rowDim, dim>&)const;
+	template<int rowDim>
+	uMatrix<T, rowDim, dim> vminus(const uMatrix<T, rowDim, dim>&)const;
+	template<int rowDim>
+	uMatrix<T, rowDim, dim> vminusf(const uMatrix<T, rowDim, dim>&)const;
 	template<int rowDim>
 	uMatrix<T, rowDim, dim> _multiple(const uMatrix<T, rowDim, dim>&)const;         // .* mat.
 	template<int colDim>
 	tVector<T, colDim> multiple(const uMatrix<T, dim, colDim>&)const;               // * mat.
+	template<int rowDim>
+	uMatrix<T, rowDim, dim> cross(const uMatrix<T, rowDim, dim>&)const;
 
 public:
 	tVector(int = 0, int = 0);                        // default constructor.
@@ -769,17 +847,26 @@ public:
 	friend tVector<T, dim> operator*(const tVector<T, dim>& my, const T& k) { return my.arithmetic(k, 2); }
 	friend tVector<T, dim> operator*(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.arithmetic(tvec, 2); }
 	friend tVector<T, dim> operator^(const tVector<T, dim>& my, const tVector<T, dim>& tvec) { return my.arithmetic(tvec, 3); }
+	friend tVector<T, dim> operator/(const tVector<T, dim>& my, const T& k) { return my.arithmetic(k, 3); }
+	friend tVector<T, dim> operator/(const T& k, const tVector<T, dim>& my) { return my.arithmetic(k, 4); }
 	friend T operator*(const tVector<T, dim>& my, const Vector<T, dim>& vec) { return my.multiple(vec); }
 
 	template<int rowDim>
-	friend uMatrix<T, rowDim, dim> operator^(const tVector<T, dim>& my, const uMatrix<T, rowDim, dim>& mat) { return my.cross(mat); }
+	friend uMatrix<T, rowDim, dim> operator+(const Vector<T, dim>& my, const uMatrix<T, rowDim, dim>& mat) { return my.vadd(mat); }
 	template<int rowDim>
-	friend uMatrix<T, rowDim, dim> operator^(const uMatrix<T, rowDim, dim>& mat, const tVector<T, dim>& my) { return my.cross(mat); }
+	friend uMatrix<T, rowDim, dim> operator+(const uMatrix<T, rowDim, dim>& mat, const Vector<T, dim>& my) { return my.vadd(mat); }
+	template<int rowDim>
+	friend uMatrix<T, rowDim, dim> operator-(const Vector<T, dim>& my, const uMatrix<T, rowDim, dim>& mat) { return my.vminus(mat); }
+	template<int rowDim>
+	friend uMatrix<T, rowDim, dim> operator-(const uMatrix<T, rowDim, dim>& mat, const Vector<T, dim>& my) { return my.vminusf(mat); }
 	template<int rowDim>
 	friend uMatrix<T, rowDim, dim> operator*(const uMatrix<T, rowDim, dim>& mat, const tVector<T, dim>& my) { return my._multiple(mat); }
 	template<int colDim>
 	friend tVector<T, colDim> operator*(const tVector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my.multiple(mat); }
-
+	template<int rowDim>
+	friend uMatrix<T, rowDim, dim> operator^(const tVector<T, dim>& my, const uMatrix<T, rowDim, dim>& mat) { return my.cross(mat); }
+	template<int rowDim>
+	friend uMatrix<T, rowDim, dim> operator^(const uMatrix<T, rowDim, dim>& mat, const tVector<T, dim>& my) { return my.cross(mat); }
 };
 
 template<typename T, int dim>
@@ -904,6 +991,8 @@ tVector<T, dim> tVector<T, dim>::arithmetic(const T& k, int type)const
 	case 0: result.add(k); break;
 	case 1: result.minusf(k); break;
 	case 2: result._multiple(k); break;
+	case 3: result.v_divide(k); break;
+	case 4: result.v_divideb(k); break;
 	default: cout << "Error Occurs: Arithmetic" << endl;
 	}
 	return result;
@@ -917,19 +1006,40 @@ T tVector<T, dim>::multiple(const Vector<T, dim>& vec)const												// tvec *
 	return ans;
 }
 
+
 template<typename T, int dim>
 template<int rowDim>
-uMatrix<T, rowDim, dim> tVector<T, dim>::cross(const uMatrix<T, rowDim, dim>& mat)const			// .* mat.
-{	// error message needed. unfinished. 2002011756
-	if (dim != 3) return mat;
-	int i;
-	uMatrix<T, rowDim, dim> result;
-	for (i = 0; i < rowDim; ++i)
-	{
-		result.vectorSet[i][0] = this->vectorSet[0][1] * mat.vectorSet[i][2] - this->vectorSet[0][2] * mat.vectorSet[i][1];
-		result.vectorSet[i][1] = this->vectorSet[0][2] * mat.vectorSet[i][0] - this->vectorSet[0][0] * mat.vectorSet[i][2];
-		result.vectorSet[i][2] = this->vectorSet[0][0] * mat.vectorSet[i][1] - this->vectorSet[0][1] * mat.vectorSet[i][0];
-	}
+uMatrix<T, rowDim, dim> tVector<T, dim>::vadd(const uMatrix<T, rowDim, dim>& mat)const
+{
+	uMatrix<T, rowDim, dim> result(mat);
+	int i, j;
+	for (j = 0; j < dim; ++j)
+		for (i = 0; i < rowDim; ++i)
+			result.vectorSet[i][j] = result.vectorSet[i][j] + getElement(j);
+	return result;
+}
+
+template<typename T, int dim>
+template<int rowDim>
+uMatrix<T, rowDim, dim> tVector<T, dim>::vminus(const uMatrix<T, rowDim, dim>& mat)const
+{
+	uMatrix<T, dim, colDim> result(mat);
+	int i, j;
+	for (j = 0; j < dim; ++j)
+		for (i = 0; i < rowDim; ++i)
+			result.vectorSet[i][j] = getElement(j) - result.vectorSet[i][j];
+	return result;
+}
+
+template<typename T, int dim>
+template<int rowDim>
+uMatrix<T, rowDim, dim> tVector<T, dim>::vminusf(const uMatrix<T, rowDim, dim>& mat)const
+{
+	uMatrix<T, dim, colDim> result(mat);
+	int i, j;
+	for (j = 0; j < dim; ++j)
+		for (i = 0; i < rowDim; ++i)
+			result.vectorSet[i][j] = result.vectorSet[i][j] - getElement(j);
 	return result;
 }
 
@@ -957,6 +1067,22 @@ tVector<T, colDim> tVector<T, dim>::multiple(const uMatrix<T, dim, colDim>& mat)
 			result.vectorSet[0][i] += this->vectorSet[0][j] * mat.vectorSet[j][i];
 	}
 	result.update();
+	return result;
+}
+
+template<typename T, int dim>
+template<int rowDim>
+uMatrix<T, rowDim, dim> tVector<T, dim>::cross(const uMatrix<T, rowDim, dim>& mat)const			// .* mat.
+{	// error message needed. unfinished. 2002011756
+	if (dim != 3) return mat;
+	int i;
+	uMatrix<T, rowDim, dim> result;
+	for (i = 0; i < rowDim; ++i)
+	{
+		result.vectorSet[i][0] = this->vectorSet[0][1] * mat.vectorSet[i][2] - this->vectorSet[0][2] * mat.vectorSet[i][1];
+		result.vectorSet[i][1] = this->vectorSet[0][2] * mat.vectorSet[i][0] - this->vectorSet[0][0] * mat.vectorSet[i][2];
+		result.vectorSet[i][2] = this->vectorSet[0][0] * mat.vectorSet[i][1] - this->vectorSet[0][1] * mat.vectorSet[i][0];
+	}
 	return result;
 }
 
@@ -1051,6 +1177,12 @@ public:
 	void setMatrix(const dMatrix<dim, dim>&);
 	dVector<dim> revert(const dVector<dim>&);
 	dVector<dim> project(const dVector<dim>&);
+	
+	template<int num>
+	dMatrix<dim, num> revert(const dMatrix<dim, num>&);
+	template<int num>
+	dMatrix<dim, num> project(const dMatrix<dim, num>&);
+	
 	void rotate(const dVector<dim>&);
 	void rotate(const dMatrix<dim, dim>&);
 	void printBase();
@@ -1133,6 +1265,22 @@ dVector<dim> LnBase<dim>::project(const dVector<dim>& vec)
 {
 	if (is_identity) return vec;
 	return baseMatrix.transpose() * vec;
+}
+
+template<int dim>
+template<int num>
+dMatrix<dim, num> LnBase<dim>::revert(const dMatrix<dim, num>& rmat)
+{
+	if (is_identity) return rmat;
+	return baseMatrix * rmat;
+}
+
+template<int dim>
+template<int num>
+dMatrix<dim, num> LnBase<dim>::project(const dMatrix<dim, num>& amat)
+{
+	if (is_identity) return mat;
+	return baseMatrix.transpose() * amat;
 }
 
 template<int dim>
