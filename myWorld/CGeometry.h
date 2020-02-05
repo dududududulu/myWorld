@@ -119,7 +119,6 @@ class CPolygon :public CShape
 	double side;
 	double angle;
 	double realm;
-
 protected:
 	void calPerim();
 	void calArea();

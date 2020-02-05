@@ -199,6 +199,10 @@ void Ref<dim>::operator=(const Ref<dim>& ref)
 
 class Observer
 {
+private:
+	
+	
+protected:
 	Ref<Dimension> ref;
 	double depth;
 	int view;
@@ -208,6 +212,12 @@ class Observer
 protected:
 	void graph_init();
 	void view_graph(int, int, int = 0);
+	void plot(const dVectordim&, const double, int);
+	void line_mapping(const dVectordim&, const dVectordim&, double, double, int);
+	void shape_mapping(const dVectordim&, const dVectordim&, const dVectordim&, double, double, double, int);
+
+	template<int num>
+	void plot(const dMatrix<Dimension, num>&, const dtVector<num>&, int);
 public:
 	Observer(double = 1, int = UpView);
 	~Observer() {};
@@ -219,21 +229,19 @@ public:
 	void rotate(const dVectordim&);
 	void rotate(const dMatrix<Dimension, Dimension>&);
 	void movement(const Motion&);
-	int packing_step(dVectordim*);
-
-	void plot(const dVectordim&, const double, int);
-	template<int num>
-	void plot(const dMatrix<Dimension, num>&, const dtVector<num>&, int);
+	double packing_step(dVectordim*);
+	
 	template<int num>
 	void mapping(const dMatrix<Dimension, num>&, int, int = point_packing);
 
-	void line_mapping(const dVectordim&, const dVectordim&, double, double, int);
 	template<int num>
-	void frame_mapping(const dMatrix<Dimension, num>&, int);
+	void point_mapping(const dMatrix<Dimension, num>&, const dVector<num>&, int);
 	template<int num>
-	void connect_mapping(const dMatrix<Dimension, num>&, int);
+	void frame_mapping(const dMatrix<Dimension, num>&, const dVector<num>&, int);
 	template<int num>
-	void shape_mapping(const dMatrix<Dimension, num>&, int);
+	void connect_mapping(const dMatrix<Dimension, num>&, const dVector<num>&, int);
+	template<int num>
+	void plane_mapping(const dMatrix<Dimension, num>&, const dVector<num>&, int);
 };
 
 template<int num>
@@ -246,35 +254,62 @@ void Observer::plot(const dMatrix<Dimension, num>& local_grapher, const dtVector
 template<int num>
 void Observer::mapping(const dMatrix<Dimension, num>& amat, int color, int type)
 {
-	int i, xindex, yindex;
 	dMatrix<Dimension, num> mat = ref.project(amat);
-	dtVector<num> dist = mat.getColLen();
-	dtVector<num> scaling = (depth * depth) / (mat.transpose() * focus);
-	dMatrix<Dimension, num> mirror = mat * scaling.transpose(), local_grapher = mirror - focus;
-	plot(local_grapher, dist, color);
+	dVector<num> scaling = (depth * depth) / (mat.transpose() * focus);
+	dMatrix<Dimension, num> mirror = mat * scaling.transpose();
 	switch (type)
 	{    // unfinished. 2002050050
-	case point_packing: break;
-	case frame_packing: frame_mapping(); break;
-	case connect_packing: connect_mapping(); break;
-	case shape_packing: shape_mapping();
+	case point_packing: point_mapping(mirror, scaling, color);  break;
+	case frame_packing: frame_mapping(mirror, scaling, color); break;
+	case connect_packing: connect_mapping(mirror, scaling, color); break;
+	case plane_packing: plane_mapping(mirror, scaling, color);
 	default: break;
 	}
 }
 
 template<int num>
-void Observer::frame_mapping(const dMatrix<Dimension, num>& mat, int color)
+void Observer::frame_mapping(const dMatrix<Dimension, num>& mirror, const dVector<num>& scaling, int color)
 {
-	int j, xindex, yindex;
-	dVectordim beg, end, dir, cur_point, step;
-	eMatrix<double, Dimension, 2> frame;
-	eMatrix<double, 2, Dimension> frameInv;
+	int j;
+	dVectordim beg, end;
 	for (j = 0; j < num - 1; ++j)
 	{
-		beg = mat.getColumn(j);
-		end = mat.getColumn(j + 1);
-		line_mapping(beg, end, scaling);
+		beg = mirror.getColumn(j);
+		end = mirror.getColumn(j + 1);
+		line_mapping(beg, end, scaling.getElement(j), scaling.getElement(j + 1), color);
+	}
+}
 
+template<int num>
+void Observer::connect_mapping(const dMatrix<Dimension, num>& mirror, const dVector<num>& scaling, int color)
+{
+	int i, j;
+	dVectordim beg, end;
+	for (i = 0; i < num - 1; ++i)
+	{
+		beg = mirror.getColumn(i);
+		for (j = i + 1; j < num; ++j)
+		{
+			end = mirror.getColumn(j);
+			line_mapping(beg, end, scaling.getElement(i), scaling.getElement(j), color);
+		}
+	}
+}
+
+template<int num>
+void Observer::plane_mapping(const dMatrix<Dimension, num>& mirror, const dVector<num>& scaling, int color)
+{
+	int i, j;
+	dVectordim beg, lend, rend;
+	for (i = 0; i < num - 2; ++i)
+	{
+		beg = mirror.getColumn(i);
+		for (j = i + 1; j < num - 1; ++j)
+		{
+			lend = mirror.getColumn(j);
+			rend = mirror.getColumn(j + 1);
+			shape_mapping(beg, lend, rend, scaling.getElement(i), scaling.getElement(j), scaling.getElement(j + 1), color);
+		}
 	}
 }
 

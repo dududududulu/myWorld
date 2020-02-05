@@ -53,7 +53,7 @@ using namespace std;
 #define point_packing    0
 #define frame_packing    1
 #define connect_packing  2
-#define shape_packing    3
+#define plane_packing    3
 
 
 /* Calculation */

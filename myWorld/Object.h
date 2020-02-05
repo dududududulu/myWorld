@@ -97,8 +97,17 @@ public:
 
 class Line :public Geometry
 {
+	dMatrix<Dimension, 2> vertex;
 public:
-	Line(double len = 1) :Geometry(line_geo, 0, len) {};
+	Line(double len = 1) :Geometry(line_geo, 0, len) {
+		double content[Dimension][2];
+		content[0][0] = len / 2; content[0][1] = -len / 2;
+		for (int i = 1; i < Dimension; ++i)
+		{
+			content[i][0] = 0; content[i][1] = 0;
+		}
+		vertex.setContent(content);
+	};
 	~Line() {};
 	void display(Observer*);
 };
@@ -123,18 +132,36 @@ public:
 
 class Square :public Shape
 {
+	dMatrix<Dimension, 4> vertex;
 public:
 	Square(double side = 1, int GMaterial = 0)
-		:Shape(square_geo, GMaterial, side) {};
+		:Shape(square_geo, GMaterial, side) {
+		double content[Dimension][4];
+		content[0][0] = side / 2; content[1][0] = side / 2;
+		content[0][1] = -side / 2; content[1][1] = side / 2;
+		content[0][2] = -side / 2; content[1][2] = -side / 2;
+		content[0][3] = side / 2; content[1][3] = -side / 2;
+		for (int i = 1; i < 4; ++i) content[2][i] = 0;
+		vertex.setContent(content);
+	};
 	~Square() {};
 	void display(Observer*);
 };
 
 class Rectangle :public Shape
 {
+	dMatrix<Dimension, 4> vertex;
 public:
 	Rectangle(double xside = 1, double yside = 1, int GMaterial = 0)
-		:Shape(rectangle_geo, GMaterial, xside, yside) {};
+		:Shape(rectangle_geo, GMaterial, xside, yside) {
+		double content[Dimension][4];
+		content[0][0] = xside / 2; content[1][0] = yside / 2;
+		content[0][1] = -xside / 2; content[1][1] = yside / 2;
+		content[0][2] = -xside / 2; content[1][2] = -yside / 2;
+		content[0][3] = xside / 2; content[1][3] = -yside / 2;
+		for (int i = 1; i < 4; ++i) content[2][i] = 0;
+		vertex.setContent(content);
+	};
 	~Rectangle() {};
 	void display(Observer*);
 };
@@ -142,9 +169,12 @@ public:
 template<int SideNum>
 class Polygon :public Shape
 {
+	dMatrix<Dimension, SideNum> vertex;
 public:
 	Polygon(double side = 1, int GMaterial = 0)
-		:Shape(polygon_geo + SideNum - 2, GMaterial, side) {};
+		:Shape(polygon_geo + SideNum - 2, GMaterial, side) {
+		// vertex unfinished. 2002051750
+	};
 	~Polygon() {};
 	void display(Observer* eye)
 	{
@@ -177,7 +207,10 @@ protected:
 	virtual void materialize() {};
 public:
 	Solid(int GType = null_geo, int GMaterial = 0, double size1 = 1, double size2 = 1, double size3 = 1)
-		:Geometry(GType, GMaterial, size1, size2, size3) {};
+		:Geometry(GType, GMaterial, size1, size2, size3) {
+		line = nullptr;
+		shape = nullptr;
+	};
 	~Solid() {};
 	void display(Observer*);
 };
