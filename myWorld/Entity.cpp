@@ -74,6 +74,21 @@ void Entity::setName(string& name)
 	Name = name;
 }
 
+void Entity::setRef(const Ref<Dimension>& reference)
+{
+	ref = reference;
+}
+
+void Entity::setRef(const dVectordim& orig)
+{
+	ref.setOrigin(orig);
+}
+
+void Entity::setRef(const double base[Dimension][Dimension])
+{
+	ref.setBase(base);
+}
+
 void Entity::init()
 {
 	new_init();
@@ -81,5 +96,5 @@ void Entity::init()
 
 void Entity::status_update()
 {
-	ref->movement(status->motion);
+	ref.movement(status->motion);
 }

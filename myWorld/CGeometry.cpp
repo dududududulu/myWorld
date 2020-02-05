@@ -37,6 +37,11 @@ CLine::CLine(double len) : CGeometry()
 	else length = -1;
 }
 
+double CLine::getVal(int i)
+{
+	return length;
+}
+
 void CLine::resize(double len, double ash1, double ash2)
 {
 	length = len;
@@ -90,6 +95,11 @@ void CCircle::calArea()
 	this->area = PI * radius * radius;
 }
 
+double CCircle::getVal(int i)
+{
+	return radius;
+}
+
 void CCircle::resize(double rad, double ash1, double ash2)
 {
 	radius = rad;
@@ -130,6 +140,11 @@ void CSquare::calPerim()
 void CSquare::calArea()
 {
 	this->area = side * side;
+}
+
+double CSquare::getVal(int i)
+{
+	return side;
 }
 
 void CSquare::resize(double len, double ash1, double ash2)
@@ -181,6 +196,16 @@ void CRectangle::calPerim()
 void CRectangle::calArea()
 {
 	this->area = xside * yside;
+}
+
+double CRectangle::getVal(int i)
+{
+	switch (i)
+	{
+	case 0: return xside; break;
+	case 1: return yside; break;
+	default: return xside;
+	}
 }
 
 void CRectangle::resize(double xlen, double ylen, double ash2)
@@ -248,6 +273,11 @@ void CGlobe::calVolume()
 	this->volume = 4 * PI * radius * radius * radius / 3;
 }
 
+double CGlobe::getVal(int i)
+{
+	return radius;
+}
+
 void CGlobe::resize(double rad, double ash1, double ash2)
 {
 	radius = rad;
@@ -288,6 +318,11 @@ void CCube::calSurface()
 void CCube::calVolume()
 {
 	this->volume = edge * edge * edge;
+}
+
+double CCube::getVal(int i)
+{
+	return edge;
 }
 
 void CCube::resize(double len, double ash1, double ash2)
@@ -342,6 +377,17 @@ void CCuboid::calVolume()
 	this->volume = xedge * yedge * zedge;
 }
 
+double CCuboid::getVal(int i)
+{
+	switch (i)
+	{
+	case 0: return xedge; break;
+	case 1: return yedge; break;
+	case 2: return zedge; break;
+	default: return xedge;
+	}
+}
+
 void CCuboid::resize(double xlen, double ylen, double zlen)
 {
 	xedge = xlen;
@@ -386,6 +432,16 @@ void CCylinder::calSurface()
 void CCylinder::calVolume()
 {
 	this->volume = PI * radius * radius * height;
+}
+
+double CCylinder::getVal(int i)
+{
+	switch (i)
+	{
+	case 0: return radius; break;
+	case 1: return height; break;
+	default: return height;
+	}
 }
 
 void CCylinder::resize(double rad, double high, double zlen)

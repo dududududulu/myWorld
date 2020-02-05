@@ -54,6 +54,7 @@ public:
 	CGeometry() :CFigure() {};
 	~CGeometry() {};
 	//virtual bool isInside(const dVector2d&) { return 0; };
+	virtual double getVal(int = 0) { return 0; };
 	virtual double getPerim() { return 0; };
 	virtual double getArea() { return 0; };
 	virtual double getSurface() { return 0; };
@@ -70,6 +71,7 @@ protected:
 public:
 	CLine(double = 1);
 	~CLine() {};
+	double getVal(int = 0);
 	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
@@ -89,6 +91,7 @@ public:
 	~CShape() {};
 	double getPerim();
 	double getArea();
+	virtual double getVal(int = 0) { return 0; };
 	virtual void resize(double, double = 1, double = 1) {};
 	virtual void scaling(double) {};
 	virtual void print() {};
@@ -103,6 +106,7 @@ protected:
 public:
 	CCircle(double = 1);
 	~CCircle() {};
+	double getVal(int = 0);
 	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
@@ -126,7 +130,7 @@ public:
 	CPolygon();
 	CPolygon(double);
 	~CPolygon() {};
-	bool isInside(const dVector2d&);
+	double getVal(int = 0);
 	void setRealm(double = 1);
 	double getRealm();
 	void setSide(double = 1);
@@ -164,6 +168,19 @@ template<int SideNum>
 void CPolygon<SideNum>::calArea()
 {
 	this->area = side * realm * cos(angle / 2) * SideNum / 2;
+}
+
+template<int SideNum>
+double CPolygon<SideNum>::getVal(int i)
+{
+	switch (i)
+	{
+	case 0: return side; break;
+	case 1: return angle; break;
+	case 2: return realm; break;
+	case 3: return SideNum; break;
+	default: return side;
+	}
 }
 
 template<int SideNum>
@@ -238,6 +255,7 @@ protected:
 public:
 	CSquare(double = 1);
 	~CSquare() {};
+	double getVal(int = 0);
 	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
@@ -253,6 +271,7 @@ public:
 	CRectangle(double = 1);
 	CRectangle(double, double);
 	~CRectangle() {};
+	double getVal(int = 0);
 	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
@@ -269,6 +288,7 @@ protected:
 public:
 	CFreeShape(double = 1);
 	~CFreeShape() {};
+	double getVal(int = 0);
 	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
@@ -289,6 +309,7 @@ public:
 	~CSolid() {};
 	double getSurface();
 	double getVolume();
+	virtual double getVal(int = 0) { return 0; };
 	virtual void resize(double, double = 1, double = 1) {};
 	virtual void scaling(double) {};
 	virtual void print() {};
@@ -303,6 +324,7 @@ protected:
 public:
 	CGlobe(double = 1);
 	~CGlobe() {};
+	double getVal(int = 0);
 	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
@@ -317,6 +339,7 @@ protected:
 public:
 	CCube(double = 1);
 	~CCube() {};
+	double getVal(int = 0);
 	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
@@ -332,6 +355,7 @@ public:
 	CCuboid(double = 1);
 	CCuboid(double, double, double);
 	~CCuboid() {};
+	double getVal(int = 0);
 	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
@@ -346,6 +370,7 @@ protected:
 public:
 	CCylinder(double = 1, double = 1);
 	~CCylinder() {};
+	double getVal(int = 0);
 	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
@@ -363,6 +388,7 @@ public:
 	CPrism();
 	CPrism(double, double);
 	~CPrism() {};
+	double getVal(int = 0);
 	void resize(double, double = 1, double = 1);
 	void scaling(double);
 	void print();
@@ -393,6 +419,13 @@ template<int SideNum>
 void CPrism<SideNum>::calVolume()
 {
 	this->volume = height * polygon.getArea();
+}
+
+template<int SideNum>
+double CPrism<SideNum>::getVal(int i)
+{
+	if (i < 4) return polygon.getVal(i);
+	return height;
 }
 
 template<int SideNum>

@@ -69,6 +69,9 @@ public:
 		empty();
 	};
 	void setName(string&);
+	void setRef(const Ref<Dimension>&);
+	void setRef(const dVectordim&);
+	void setRef(const double [][Dimension]);
 	virtual void init();
 	virtual void status_update();
 	virtual void print() {};

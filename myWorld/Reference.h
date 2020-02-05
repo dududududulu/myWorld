@@ -49,6 +49,7 @@ public:
 	bool isBalanced();
 	bool isAbsolute();
 	void setOrigin(const dVector<dim>&);
+	void setBase(const double [][dim]);
 	void setBase(const dMatrix<dim, dim>&);
 	dVector<dim> getOrigin();
 	dVector<dim> revert(const dVector<dim>&);                       // revert the vector in this to absolute reference
@@ -98,6 +99,12 @@ template<int dim>
 void Ref<dim>::setOrigin(const dVector<dim>& orig)
 {
 	origin = orig;
+}
+
+template<int dim>
+void Ref<dim>::setBase(const double content[][dim])
+{
+	base.setMatrix(content);
 }
 
 template<int dim>
@@ -265,6 +272,13 @@ void Observer::mapping(const dMatrix<Dimension, num>& amat, int color, int type)
 	case plane_packing: plane_mapping(mirror, scaling, color);
 	default: break;
 	}
+}
+
+template<int num>
+void Observer::point_mapping(const dMatrix<Dimension, num>& mirror, const dVector<num>& scaling, int color)
+{
+	//plot(mirror, );
+	// unfinished. 2002051923
 }
 
 template<int num>

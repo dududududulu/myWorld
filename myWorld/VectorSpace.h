@@ -96,6 +96,8 @@ public:
 	T* getDir()const { return this->direction; };
 	int getDim() { return dim; };                              // get dimension.
 	void normalize(const T& = 1);                              // normalize the vector under specific scale.
+	void setVal(const T[dim]);
+	void setVal(T, T, T);
 	T& getSum();
 	T& dot(VectorFrame<T, dim>&)const;                         // * target vec.
 	T& project(VectorFrame<T, dim>&)const;                     // get the projection on the target vec.
@@ -321,6 +323,24 @@ void VectorFrame<T, dim>::normalize(const T& scale)
 	for (i = 0; i < dim; ++i)
 		setElement(this->direction[i] * scale, i);
 	this->length = scale;
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::setVal(const T content[dim])
+{
+	int i;
+	for (i = 0; i < dim; ++i)
+		setElement(content[i], i);
+	update();
+}
+
+template<typename T, int dim>
+void VectorFrame<T, dim>::setVal(T data1, T data2, T data3)
+{
+	setElement(data1, 0);
+	setElement(data2, 1);
+	setElement(data3, 2);
+	update();
 }
 
 template<typename T, int dim>
@@ -1174,6 +1194,7 @@ public:
 	LnBase(const LnBase<dim>&);
 	~LnBase() {};
 	bool isIdentity();
+	void setMatrix(const double [][dim]);
 	void setMatrix(const dMatrix<dim, dim>&);
 	dVector<dim> revert(const dVector<dim>&);
 	dVector<dim> project(const dVector<dim>&);
@@ -1244,6 +1265,13 @@ template<int dim>
 bool LnBase<dim>::isIdentity()
 {
 	return is_identity;
+}
+
+template<int dim>
+void LnBase<dim>::setMatrix(const double content[][dim])
+{
+	baseMatrix.setContent(content);
+	update();
 }
 
 template<int dim>

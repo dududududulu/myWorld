@@ -5,6 +5,7 @@
 #include <cstring>
 #include <cmath>
 #include "settings.h"
+#include "List.h"
 #include "Matrix.h"
 #include "VectorSpace.h"
 #include "Reference.h"
@@ -104,7 +105,8 @@ public:
 		content[0][0] = len / 2; content[0][1] = -len / 2;
 		for (int i = 1; i < Dimension; ++i)
 		{
-			content[i][0] = 0; content[i][1] = 0;
+			content[i][0] = 0;
+			content[i][1] = 0;
 		}
 		vertex.setContent(content);
 	};
@@ -141,7 +143,7 @@ public:
 		content[0][1] = -side / 2; content[1][1] = side / 2;
 		content[0][2] = -side / 2; content[1][2] = -side / 2;
 		content[0][3] = side / 2; content[1][3] = -side / 2;
-		for (int i = 1; i < 4; ++i) content[2][i] = 0;
+		for (int i = 0; i < 4; ++i) content[2][i] = 0;
 		vertex.setContent(content);
 	};
 	~Square() {};
@@ -159,7 +161,7 @@ public:
 		content[0][1] = -xside / 2; content[1][1] = yside / 2;
 		content[0][2] = -xside / 2; content[1][2] = -yside / 2;
 		content[0][3] = xside / 2; content[1][3] = -yside / 2;
-		for (int i = 1; i < 4; ++i) content[2][i] = 0;
+		for (int i = 0; i < 4; ++i) content[2][i] = 0;
 		vertex.setContent(content);
 	};
 	~Rectangle() {};
@@ -173,26 +175,18 @@ class Polygon :public Shape
 public:
 	Polygon(double side = 1, int GMaterial = 0)
 		:Shape(polygon_geo + SideNum - 2, GMaterial, side) {
-		// vertex unfinished. 2002051750
+		double content[Dimension][SideNum], angle = PI * 2 / SideNum;
+		for (int i = 0; i < SideNum; ++i)
+		{
+			content[0][i] = cos(angle * i);
+			content[1][i] = sin(angle * i);
+			content[2][i] = 0;
+		}
+		vertex.setContent(content);
 	};
 	~Polygon() {};
-	void display(Observer* eye)
-	{
-		double realm = this->cgeo->getRealm(), rr;
-		double itr = -realm, jtr, jend;
-		double step = eye->point_mapping(this->ref->getOrigin());
-		int i, j;
-		while(itr < realm)
-		{
-			jend = sqrt(rr - itr * itr);
-			jtr = -jend;
-			while (jtr < 0)
-			{
-				//if (this->cgeo->isInside(/* unfinished */)) break;
-				jtr = jtr + step;
-			}
-			itr = itr + step;
-		}
+	void display(Observer* eye) {
+		eye->mapping(vertex, this->color, plane_packing);
 	}
 };
 
@@ -201,15 +195,21 @@ public:
 
 class Solid :public Geometry
 {
+protected:
+	int line_num, shape_num;
 	Line* line;
 	Shape* shape;
 protected:
+	virtual bool checkLineVisible(int);
+	virtual bool checkShapeVisible(int);
 	virtual void materialize() {};
 public:
 	Solid(int GType = null_geo, int GMaterial = 0, double size1 = 1, double size2 = 1, double size3 = 1)
 		:Geometry(GType, GMaterial, size1, size2, size3) {
 		line = nullptr;
 		shape = nullptr;
+		line_num = 0;
+		shape_num = 0;
 	};
 	~Solid() {};
 	void display(Observer*);
