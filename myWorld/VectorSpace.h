@@ -286,7 +286,7 @@ template<typename T, int dim>
 void VectorFrame<T, dim>::v_divideb(const T& k)							// .* vec.
 {
 	for (int i = 0; i < dim; ++i)
-		if (getElement(i) != 0) setElement(k / getElement(i));
+		if (getElement(i) != 0) setElement(k / getElement(i), i);
 	update();
 }
 
@@ -430,11 +430,11 @@ protected:
 	Vector<T, dim> arithmetic(const T&, int)const;                                  // + vec.
 
 	template<int colDim>
-	uMatrix<T, dim, colDim> vadd(const uMatrix<T, dim, colDim>&)const;
+	uMatrix<T, dim, colDim> _add(const uMatrix<T, dim, colDim>&)const;
 	template<int colDim>
-	uMatrix<T, dim, colDim> vminus(const uMatrix<T, dim, colDim>&)const;
+	uMatrix<T, dim, colDim> _minus(const uMatrix<T, dim, colDim>&)const;
 	template<int colDim>
-	uMatrix<T, dim, colDim> vminusf(const uMatrix<T, dim, colDim>&)const;
+	uMatrix<T, dim, colDim> _minusf(const uMatrix<T, dim, colDim>&)const;
 	template<int colDim>
 	uMatrix<T, dim, colDim> multiple(const tVector<T, colDim>&)const;               // * tvec.
 	template<int colDim>
@@ -488,13 +488,13 @@ public:
 	friend Vector<T, dim> operator/(const T& k, const Vector<T, dim>& my) { return my.arithmetic(k, 4); }
 
 	template<int colDim>
-	friend uMatrix<T, dim, colDim> operator+(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my.vadd(mat); }
+	friend uMatrix<T, dim, colDim> operator+(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my._add(mat); }
 	template<int colDim>
-	friend uMatrix<T, dim, colDim> operator+(const uMatrix<T, dim, colDim>& mat, const Vector<T, dim>& my) { return my.vadd(mat); }
+	friend uMatrix<T, dim, colDim> operator+(const uMatrix<T, dim, colDim>& mat, const Vector<T, dim>& my) { return my._add(mat); }
 	template<int colDim>
-	friend uMatrix<T, dim, colDim> operator-(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my.vminus(mat); }
+	friend uMatrix<T, dim, colDim> operator-(const Vector<T, dim>& my, const uMatrix<T, dim, colDim>& mat) { return my._minus(mat); }
 	template<int colDim>
-	friend uMatrix<T, dim, colDim> operator-(const uMatrix<T, dim, colDim>& mat, const Vector<T, dim>& my) { return my.vminusf(mat); }
+	friend uMatrix<T, dim, colDim> operator-(const uMatrix<T, dim, colDim>& mat, const Vector<T, dim>& my) { return my._minusf(mat); }
 	template<int colDim>
 	friend uMatrix<T, dim, colDim> operator*(const Vector<T, dim>& my, const tVector<T, colDim>& tvec) { return my.multiple(tvec); }
 	template<int colDim>
@@ -638,7 +638,7 @@ Vector<T, dim> Vector<T, dim>::arithmetic(const T& k, int type)const
 
 template<typename T, int dim>
 template<int colDim>
-uMatrix<T, dim, colDim> Vector<T, dim>::vadd(const uMatrix<T, dim, colDim>& mat)const
+uMatrix<T, dim, colDim> Vector<T, dim>::_add(const uMatrix<T, dim, colDim>& mat)const
 {
 	uMatrix<T, dim, colDim> result(mat);
 	int i, j;
@@ -650,7 +650,7 @@ uMatrix<T, dim, colDim> Vector<T, dim>::vadd(const uMatrix<T, dim, colDim>& mat)
 
 template<typename T, int dim>
 template<int colDim>
-uMatrix<T, dim, colDim> Vector<T, dim>::vminus(const uMatrix<T, dim, colDim>& mat)const
+uMatrix<T, dim, colDim> Vector<T, dim>::_minus(const uMatrix<T, dim, colDim>& mat)const
 {
 	uMatrix<T, dim, colDim> result(mat);
 	int i, j;
@@ -662,7 +662,7 @@ uMatrix<T, dim, colDim> Vector<T, dim>::vminus(const uMatrix<T, dim, colDim>& ma
 
 template<typename T, int dim>
 template<int colDim>
-uMatrix<T, dim, colDim> Vector<T, dim>::vminusf(const uMatrix<T, dim, colDim>& mat)const
+uMatrix<T, dim, colDim> Vector<T, dim>::_minusf(const uMatrix<T, dim, colDim>& mat)const
 {
 	uMatrix<T, dim, colDim> result(mat);
 	int i, j;
@@ -816,11 +816,11 @@ protected:
 	T multiple(const Vector<T, dim>&)const;
 
 	template<int rowDim>
-	uMatrix<T, rowDim, dim> vadd(const uMatrix<T, rowDim, dim>&)const;
+	uMatrix<T, rowDim, dim> _add(const uMatrix<T, rowDim, dim>&)const;
 	template<int rowDim>
-	uMatrix<T, rowDim, dim> vminus(const uMatrix<T, rowDim, dim>&)const;
+	uMatrix<T, rowDim, dim> _minus(const uMatrix<T, rowDim, dim>&)const;
 	template<int rowDim>
-	uMatrix<T, rowDim, dim> vminusf(const uMatrix<T, rowDim, dim>&)const;
+	uMatrix<T, rowDim, dim> _minusf(const uMatrix<T, rowDim, dim>&)const;
 	template<int rowDim>
 	uMatrix<T, rowDim, dim> _multiple(const uMatrix<T, rowDim, dim>&)const;         // .* mat.
 	template<int colDim>
@@ -872,13 +872,13 @@ public:
 	friend T operator*(const tVector<T, dim>& my, const Vector<T, dim>& vec) { return my.multiple(vec); }
 
 	template<int rowDim>
-	friend uMatrix<T, rowDim, dim> operator+(const Vector<T, dim>& my, const uMatrix<T, rowDim, dim>& mat) { return my.vadd(mat); }
+	friend uMatrix<T, rowDim, dim> operator+(const Vector<T, dim>& my, const uMatrix<T, rowDim, dim>& mat) { return my._add(mat); }
 	template<int rowDim>
-	friend uMatrix<T, rowDim, dim> operator+(const uMatrix<T, rowDim, dim>& mat, const Vector<T, dim>& my) { return my.vadd(mat); }
+	friend uMatrix<T, rowDim, dim> operator+(const uMatrix<T, rowDim, dim>& mat, const Vector<T, dim>& my) { return my._add(mat); }
 	template<int rowDim>
-	friend uMatrix<T, rowDim, dim> operator-(const Vector<T, dim>& my, const uMatrix<T, rowDim, dim>& mat) { return my.vminus(mat); }
+	friend uMatrix<T, rowDim, dim> operator-(const Vector<T, dim>& my, const uMatrix<T, rowDim, dim>& mat) { return my._minus(mat); }
 	template<int rowDim>
-	friend uMatrix<T, rowDim, dim> operator-(const uMatrix<T, rowDim, dim>& mat, const Vector<T, dim>& my) { return my.vminusf(mat); }
+	friend uMatrix<T, rowDim, dim> operator-(const uMatrix<T, rowDim, dim>& mat, const Vector<T, dim>& my) { return my._minusf(mat); }
 	template<int rowDim>
 	friend uMatrix<T, rowDim, dim> operator*(const uMatrix<T, rowDim, dim>& mat, const tVector<T, dim>& my) { return my._multiple(mat); }
 	template<int colDim>
@@ -1029,7 +1029,7 @@ T tVector<T, dim>::multiple(const Vector<T, dim>& vec)const												// tvec *
 
 template<typename T, int dim>
 template<int rowDim>
-uMatrix<T, rowDim, dim> tVector<T, dim>::vadd(const uMatrix<T, rowDim, dim>& mat)const
+uMatrix<T, rowDim, dim> tVector<T, dim>::_add(const uMatrix<T, rowDim, dim>& mat)const
 {
 	uMatrix<T, rowDim, dim> result(mat);
 	int i, j;
@@ -1041,9 +1041,9 @@ uMatrix<T, rowDim, dim> tVector<T, dim>::vadd(const uMatrix<T, rowDim, dim>& mat
 
 template<typename T, int dim>
 template<int rowDim>
-uMatrix<T, rowDim, dim> tVector<T, dim>::vminus(const uMatrix<T, rowDim, dim>& mat)const
+uMatrix<T, rowDim, dim> tVector<T, dim>::_minus(const uMatrix<T, rowDim, dim>& mat)const
 {
-	uMatrix<T, dim, colDim> result(mat);
+	uMatrix<T, rowDim, dim> result(mat);
 	int i, j;
 	for (j = 0; j < dim; ++j)
 		for (i = 0; i < rowDim; ++i)
@@ -1053,9 +1053,9 @@ uMatrix<T, rowDim, dim> tVector<T, dim>::vminus(const uMatrix<T, rowDim, dim>& m
 
 template<typename T, int dim>
 template<int rowDim>
-uMatrix<T, rowDim, dim> tVector<T, dim>::vminusf(const uMatrix<T, rowDim, dim>& mat)const
+uMatrix<T, rowDim, dim> tVector<T, dim>::_minusf(const uMatrix<T, rowDim, dim>& mat)const
 {
-	uMatrix<T, dim, colDim> result(mat);
+	uMatrix<T, rowDim, dim> result(mat);
 	int i, j;
 	for (j = 0; j < dim; ++j)
 		for (i = 0; i < rowDim; ++i)
@@ -1307,7 +1307,7 @@ template<int dim>
 template<int num>
 dMatrix<dim, num> LnBase<dim>::project(const dMatrix<dim, num>& amat)
 {
-	if (is_identity) return mat;
+	if (is_identity) return amat;
 	return baseMatrix.transpose() * amat;
 }
 

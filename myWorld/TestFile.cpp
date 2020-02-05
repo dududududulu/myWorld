@@ -72,6 +72,20 @@ bool matrix_test()
 	cout << "zvec = " << zvec << endl;
 	cout << "ctest = " << ctest << endl;
 
+	dVector3d rotvec(2, 0);
+	rotvec = rotvec * (PI / 3);
+	LnBase<Dimension> base;
+	base.printBase();
+	base.rotate(rotvec);
+	cout << "vec = " << rotvec << endl;
+	base.printBase();
+	dVector3d axis(3, 0);
+	uMatrix<double, Dimension, Dimension> R = rotator<double, Dimension>(axis);
+	uMatrix<double, Dimension, Dimension> RTR = R.transpose() * R;
+	cout << "axis = " << axis << endl;
+	cout << "R = " << R << endl;
+	cout << "RTR = " << RTR << endl;
+
 	return 1;
 }
 

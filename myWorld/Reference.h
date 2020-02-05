@@ -51,6 +51,7 @@ public:
 	void setOrigin(const dVector<dim>&);
 	void setBase(const double [][dim]);
 	void setBase(const dMatrix<dim, dim>&);
+	void setBase(const LnBase<dim>&);
 	dVector<dim> getOrigin();
 	dVector<dim> revert(const dVector<dim>&);                       // revert the vector in this to absolute reference
 	dVector<dim> project(const dVector<dim>&);                      // project the absolute vector to this
@@ -111,6 +112,12 @@ template<int dim>
 void Ref<dim>::setBase(const dMatrix<dim, dim>& mat)
 {
 	base.setMatrix(mat);
+}
+
+template<int dim>
+void Ref<dim>::setBase(const LnBase<dim>& newbase)
+{
+	base = newbase;
 }
 
 template<int dim>
