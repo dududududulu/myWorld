@@ -52,12 +52,13 @@ protected:
 protected:
 	virtual void materialize() {};
 public:
-	Object() :Individual() { color = 0; }; // unfinished, 2002022050
+	Object() :Individual() { color = 100; }; // unfinished, 2002022050
 	~Object() {};
 	double getMass() { return mass; };
 	double getVolume() { return volume; };
 	double getDensity() { return density; };
 	int getColor() { return color; };
+	void setColor(int col) { color = col; };
 	virtual void init() {};
 	virtual void print() {};
 	virtual void display(Observer*) {};
@@ -84,6 +85,7 @@ protected:
 	CGeometry* cgeo;
 protected:
 	void physical_init();
+	virtual CGeometry* getConcept() { return cgeo; };
 	virtual void materialize() {};
 public:
 	Geometry(int = null_geo, int = 0, double = 1, double = 1, double = 1);
@@ -99,6 +101,8 @@ public:
 class Line :public Geometry
 {
 	dMatrix<Dimension, 2> vertex;
+protected:
+	virtual CGeometry* getConcept() { return this->cgeo; };
 public:
 	Line(double len = 1) :Geometry(line_geo, 0, len) {
 		double content[Dimension][2];
@@ -116,6 +120,8 @@ public:
 
 class Shape :public Geometry
 {
+protected:
+	virtual CGeometry* getConcept() { return this->cgeo; };
 public:
 	Shape(int GType = null_geo, int GMaterial = 0, double size1 = 1, double size2 = 1, double size3 = 1)
 		:Geometry(GType, GMaterial, size1, size2, size3) {};
@@ -125,6 +131,8 @@ public:
 
 class Circle :public Shape
 {
+protected:
+	CGeometry* getConcept();
 public:
 	Circle(double r = 1, int GMaterial = 0)
 		:Shape(circle_geo, GMaterial, r) {};
@@ -135,6 +143,8 @@ public:
 class Square :public Shape
 {
 	dMatrix<Dimension, 4> vertex;
+protected:
+	CGeometry* getConcept();
 public:
 	Square(double side = 1, int GMaterial = 0)
 		:Shape(square_geo, GMaterial, side) {
@@ -211,7 +221,18 @@ public:
 		line_num = 0;
 		shape_num = 0;
 	};
-	~Solid() {};
+	~Solid() {
+		if (line_num > 0)
+		{
+			delete[] line;
+			line_num = 0;
+		}
+		if (shape_num > 0)
+		{
+			delete[] shape;
+			shape_num = 0;
+		}
+	};
 	void display(Observer*);
 };
 

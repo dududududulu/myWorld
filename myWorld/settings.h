@@ -9,7 +9,7 @@ using namespace std;
 #define Dimension        3
 #define TimeElapse       1
 #define GLength          256
-#define GWidth           256
+#define GWidth           400
 #define ShotLength       10
 #define ShotWidth        10
 #define PixelWidth       ShotWidth / GWidth

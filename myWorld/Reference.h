@@ -8,6 +8,8 @@
 #include "Matrix.h"
 #include "VectorSpace.h"
 #include "Effect.h"
+#include <opencv2/opencv.hpp>
+using namespace cv;
 using namespace std;
 
 /*
@@ -214,8 +216,7 @@ void Ref<dim>::operator=(const Ref<dim>& ref)
 class Observer
 {
 private:
-	
-	
+	//Mat img;
 protected:
 	Ref<Dimension> ref;
 	double depth;
@@ -226,7 +227,7 @@ protected:
 protected:
 	void graph_init();
 	void view_graph(int, int, int = 0);
-	void plot(const dVectordim&, const double, int);
+	void plot_graph(const dVectordim&, const double, int);
 	void line_mapping(const dVectordim&, const dVectordim&, double, double, int);
 	void shape_mapping(const dVectordim&, const dVectordim&, const dVectordim&, double, double, double, int);
 
@@ -239,6 +240,8 @@ public:
 	int getView();
 	void setDepth(double);
 	double getDepth();
+	void display();
+
 	void deviate(const dVectordim&);
 	void rotate(const dVectordim&);
 	void rotate(const dMatrix<Dimension, Dimension>&);
@@ -262,7 +265,7 @@ template<int num>
 void Observer::plot(const dMatrix<Dimension, num>& local_grapher, const dtVector<num>& dist, int color)
 {
 	for (int i = 0; i < num; ++i)
-		plot(local_grapher.getColumn(i), dist.getElement(i), color);
+		plot_graph(local_grapher.getColumn(i), dist.getElement(i), color);
 }
 
 template<int num>

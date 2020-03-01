@@ -32,7 +32,7 @@ Geometry::Geometry(int GType, int GMaterial, double size1, double size2, double 
 	case line_geo: cgeo = new CLine(size1); break;
 
 	case circle_geo: cgeo = new CCircle(size1); break;
-	case square_geo: cgeo = new CSquare(size1); break;
+	case square_geo: cgeo = new CSquare(size1); cout << "Concept of Squares has been established!" << endl; break;
 	case rectangle_geo: cgeo = new CRectangle(size1, size2); break;
 	case triangle_geo: cgeo = new CPolygon<3>(size1); break;
 	case rectagon_geo: cgeo = new CPolygon<4>(size1); break;
@@ -40,7 +40,7 @@ Geometry::Geometry(int GType, int GMaterial, double size1, double size2, double 
 	case hexagon_geo: cgeo = new CPolygon<6>(size1); break; 
 
 	case globe_geo: cgeo = new CGlobe(size1); break;
-	case cube_geo: cgeo = new CCube(size1); break;
+	case cube_geo: cgeo = new CCube(size1); cout << "Concept of Cube has been established!" << endl; break;
 	case triprism_geo: cgeo = new CPrism<3>(size1, size2); break;
 	case cuboid_geo: cgeo = new CCuboid(size1, size2, size3); break;
 	case cylinder_geo: cgeo = new CCylinder(size1, size2); break;
@@ -61,7 +61,7 @@ void Geometry::physical_init()
 
 void Geometry::resize(double size1, double size2, double size3)
 {
-	cgeo->resize(size1, size2, size3);
+	getConcept()->resize(size1, size2, size3);
 }
 
 void Geometry::init()
@@ -72,7 +72,7 @@ void Geometry::init()
 void Geometry::print()
 {
 	// Entity print(); unfinished, 2002021700
-	cgeo->print();
+	getConcept()->print();
 }
 
 
@@ -88,9 +88,19 @@ void Circle::display(Observer* eye)
 	// unfinished. 2002051926
 }
 
+CGeometry* Circle::getConcept()
+{
+	return this->cgeo;
+}
+
 void Square::display(Observer* eye)
 {
 	eye->mapping(vertex, this->color, plane_packing);
+}
+
+CGeometry* Square::getConcept()
+{
+	return this->cgeo;
 }
 
 void Rectangle::display(Observer* eye)
@@ -131,6 +141,7 @@ void Globe::materialize()
 
 void Cube::materialize()
 {
+	cout << "Materialization of Cube has been in progress." << endl;
 	double edge = this->cgeo->getVal(), size = edge / 2;
 	double base[Dimension][Dimension];
 	dVectordim orig = this->ref.getOrigin(), drift;
@@ -138,6 +149,8 @@ void Cube::materialize()
 	this->shape = new Square[shape_num];
 	for (int i = 0; i < shape_num; ++i)
 		this->shape[i].resize(edge);
+
+	cout << "Concept of Shapes has been established!" << endl;
 
 	drift.setVal(size, 0, 0);
 	base[0][0] = 0; base[1][0] = 1; base[2][0] = 0;

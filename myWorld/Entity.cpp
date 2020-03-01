@@ -61,12 +61,12 @@ Entity::Entity(string& name)
 void Entity::new_init()
 {
 	empty();
-	status = new Status;
+	//status = new Status;
 }
 
 void Entity::empty()
 {
-	if (status) delete status;
+	//if (status) delete status;
 }
 
 void Entity::setName(string& name)
@@ -96,5 +96,5 @@ void Entity::init()
 
 void Entity::status_update()
 {
-	ref.movement(status->motion);
+	ref.movement(status.motion);
 }

@@ -78,6 +78,24 @@ double Observer::getDepth()
 	return depth;
 }
 
+void Observer::display()
+{
+	int i, j, color;
+	Mat img(GWidth, GLength, CV_8UC3);
+	for (i = 0; i < img.rows; ++i)
+		for (j = 0; j < img.cols; ++j)
+		{
+			color = graph[j][i];
+			if (graph[j][i] == -1) color = 0;
+			*(img.data + img.step[0] * i + img.step[1] * j + img.elemSize1() * 0) = graph[j][i];
+			*(img.data + img.step[0] * i + img.step[1] * j + img.elemSize1() * 1) = graph[j][i];
+			*(img.data + img.step[0] * i + img.step[1] * j + img.elemSize1() * 2) = graph[j][i];
+		}
+	imshow("img_rst", img);
+	waitKey();
+}
+
+
 void Observer::deviate(const dVectordim& vec)
 {
 	ref.deviate(vec);
@@ -98,7 +116,7 @@ void Observer::movement(const Motion& motion)
 	ref.movement(motion);
 }
 
-void Observer::plot(const dVectordim& local_grapher, const double dist, int color)
+void Observer::plot_graph(const dVectordim& local_grapher, const double dist, int color)
 {
 	int xindex, yindex;
 	// focus should be subtracted from grapher, but it is trival and purely a waste of time. 2002051642
@@ -153,10 +171,10 @@ void Observer::line_mapping(const dVectordim& beg, const dVectordim& end, double
 	{
 		ratio = i / line_scale;
 		beta = scale1 * (1 - ratio) + scale2 * ratio;
-		plot(cur_point, cur_point.getLen() / beta, color);
+		plot_graph(cur_point, cur_point.getLen() / beta, color);
 		cur_point = cur_point + step;
 	}
-	plot(end, end.getLen() / scale2, color);
+	plot_graph(end, end.getLen() / scale2, color);
 }
 
 void Observer::shape_mapping(const dVectordim& beg, const dVectordim& lend, const dVectordim& rend, double scale1, double scale2, double scale3, int color)
@@ -178,14 +196,14 @@ void Observer::shape_mapping(const dVectordim& beg, const dVectordim& lend, cons
 			rratio = r / rscale;
 			cur_point = cur_point + rstep;
 			beta = scale1 * (1 - lratio - rratio) + scale2 * rratio + scale3 * lratio;
-			plot(cur_point, cur_point.getLen() / beta, color);
+			plot_graph(cur_point, cur_point.getLen() / beta, color);
 		}
 		rratio = rmax / rscale;
 		cur_point = cur_beg + rmax * rstep;
 		beta = scale2 * rratio + scale3 * lratio;
-		plot(cur_point, cur_point.getLen() / beta, color);
+		plot_graph(cur_point, cur_point.getLen() / beta, color);
 
 		cur_beg = cur_beg + lstep;
 	}
-	plot(rend, rend.getLen() / scale3, color);
+	plot_graph(rend, rend.getLen() / scale3, color);
 }

@@ -56,7 +56,7 @@ class Entity
 protected:
 	string Name;
 	Ref<Dimension> ref;
-	Status* status;
+	Status status;
 	//int validTime;
 	//int validZone;
 protected:
